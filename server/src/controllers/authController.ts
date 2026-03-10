@@ -19,13 +19,15 @@ export const registerHandler: RequestHandler = async (req, res, next) => {
   try {
     const { user, accessToken, refreshToken } = await registerConsumer(req.body);
     const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    // Also set cookie as fallback for same-domain scenarios
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: "none",
       expires
     });
-    res.status(201).json({ user, accessToken });
+    // Return refreshToken in body so clients can store in localStorage cross-domain
+    res.status(201).json({ user, accessToken, refreshToken });
   } catch (err) {
     next(err);
   }
@@ -41,7 +43,8 @@ export const loginHandler: RequestHandler = async (req, res, next) => {
       sameSite: "none",
       expires
     });
-    res.json({ user, accessToken });
+    // Return refreshToken in body so clients can store in localStorage cross-domain
+    res.json({ user, accessToken, refreshToken });
   } catch (err) {
     next(err);
   }
@@ -49,7 +52,8 @@ export const loginHandler: RequestHandler = async (req, res, next) => {
 
 export const refreshHandler: RequestHandler = async (req, res, next) => {
   try {
-    const token = req.cookies?.refreshToken ?? req.get("x-refresh-token") ?? null;
+    // Accept token from cookie, header, OR request body (for cross-domain localStorage approach)
+    const token = req.cookies?.refreshToken ?? req.get("x-refresh-token") ?? req.body?.refreshToken ?? null;
     if (!token) return res.status(401).json({ error: "Missing refresh token" });
     const hash = sha256Hex(token);
     const row = await findByTokenHash(hash);
@@ -71,7 +75,8 @@ export const refreshHandler: RequestHandler = async (req, res, next) => {
       sameSite: "none",
       expires
     });
-    res.json({ accessToken });
+    // Return the new refresh token so clients can update localStorage
+    res.json({ accessToken, refreshToken: newToken });
   } catch (err) {
     next(err);
   }
@@ -79,7 +84,8 @@ export const refreshHandler: RequestHandler = async (req, res, next) => {
 
 export const logoutHandler: RequestHandler = async (req, res, next) => {
   try {
-    const token = req.cookies?.refreshToken ?? null;
+    // Accept token from cookie OR body (for cross-domain localStorage approach)
+    const token = req.cookies?.refreshToken ?? req.body?.refreshToken ?? null;
     if (token) {
       const hash = sha256Hex(token);
       await revokeTokenByHash(hash);

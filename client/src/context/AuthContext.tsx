@@ -4,13 +4,13 @@ import { setAccessToken } from "../api/httpClient";
 
 type AuthState = {
   user: authApi.User | null;
-  displayUser: authApi.User | null; // for admin role switching
+  displayUser: authApi.User | null;
   accessToken: string | null;
   isLoading: boolean;
   login: (input: { email: string; password: string }) => Promise<authApi.User>;
   register: (input: { name: string; email: string; password: string }) => Promise<authApi.User>;
   logout: () => void;
-  switchViewRole?: (role: authApi.Role) => void; // admin only
+  switchViewRole?: (role: authApi.Role) => void;
 };
 
 const AuthContext = createContext<AuthState | undefined>(undefined);
@@ -21,14 +21,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [accessToken, setAccessTokenState] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Run ONCE on mount to restore session from the stored refresh token
   useEffect(() => {
     let cancelled = false;
     async function load() {
+      // Only try to refresh if we have a stored token (avoids 401 spam)
+      const stored = authApi.loadRefreshToken();
+      if (!stored) {
+        if (!cancelled) setIsLoading(false);
+        return;
+      }
       try {
-        const { accessToken } = await authApi.refresh();
-        if (accessToken) {
-          setAccessToken(accessToken);
-          setAccessTokenState(accessToken);
+        const { accessToken: newToken } = await authApi.refresh();
+        if (!cancelled && newToken) {
+          setAccessToken(newToken);
+          setAccessTokenState(newToken);
           const { user } = await authApi.me();
           if (!cancelled) {
             setUser(user);
@@ -36,7 +43,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
       } catch {
-        // no valid session
+        // no valid session - clear stored token
+        authApi.clearRefreshToken();
         if (!cancelled) {
           setAccessToken(null);
           setAccessTokenState(null);
@@ -48,10 +56,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
     void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [accessToken]);
+    return () => { cancelled = true; };
+  }, []); // <-- empty array: run ONCE on mount only
 
   const value = useMemo<AuthState>(
     () => ({
@@ -77,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
       logout: async () => {
         try {
-          await authApi.logout?.();
+          await authApi.logout();
         } catch {
           // ignore
         }
@@ -109,4 +115,3 @@ export function useAuth() {
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
   return ctx;
 }
-
