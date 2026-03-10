@@ -56,9 +56,13 @@ app.use("/api/qr/scan", scanLimiter);
 app.use("/api", apiRoutes);
 app.use("/", apiRoutes); // Fallback for clients missing the /api prefix in their VITE_API_BASE_URL
 
-// serve API documentation
-const swaggerDocument = YAML.load("./openapi.yaml");
-app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// serve API documentation (optional, won't crash if file is missing)
+try {
+  const swaggerDocument = YAML.load("./openapi.yaml");
+  app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+} catch {
+  console.warn("openapi.yaml not found, /api/docs will be unavailable");
+}
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", service: "smart-ecotrack-server" });
