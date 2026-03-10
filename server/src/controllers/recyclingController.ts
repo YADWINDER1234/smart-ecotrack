@@ -1,10 +1,9 @@
 import type { RequestHandler } from "express";
 import { z } from "zod";
 import { transitionWorkflow, getWorkflowEvents } from "../services/workflowService";
-import { decodeQrToken } from "../services/qrService";
 
 const baseSchema = z.object({
-  qr_id: z.string().min(10),
+  qr_id: z.string().uuid(),
   notes: z.string().max(2000).optional()
 });
 
@@ -17,10 +16,9 @@ export const finalizeSchema = baseSchema.extend({
 
 export const submitIntentHandler: RequestHandler = async (req, res, next) => {
   try {
-    const { qr_id: token, notes } = intentSchema.parse(req.body);
-    const payload = decodeQrToken(token);
+    const { qr_id, notes } = intentSchema.parse(req.body);
     const result = await transitionWorkflow({
-      qrId: payload.qr_id,
+      qrId: qr_id,
       actorId: req.user!.id,
       actorRole: req.user!.role,
       targetState: "INTENT_SUBMITTED",
@@ -34,10 +32,9 @@ export const submitIntentHandler: RequestHandler = async (req, res, next) => {
 
 export const confirmReceivedHandler: RequestHandler = async (req, res, next) => {
   try {
-    const { qr_id: token, notes } = receivedSchema.parse(req.body);
-    const payload = decodeQrToken(token);
+    const { qr_id, notes } = receivedSchema.parse(req.body);
     const result = await transitionWorkflow({
-      qrId: payload.qr_id,
+      qrId: qr_id,
       actorId: req.user!.id,
       actorRole: req.user!.role,
       targetState: "RECEIVED",
@@ -51,10 +48,9 @@ export const confirmReceivedHandler: RequestHandler = async (req, res, next) => 
 
 export const logSortedHandler: RequestHandler = async (req, res, next) => {
   try {
-    const { qr_id: token, notes } = sortedSchema.parse(req.body);
-    const payload = decodeQrToken(token);
+    const { qr_id, notes } = sortedSchema.parse(req.body);
     const result = await transitionWorkflow({
-      qrId: payload.qr_id,
+      qrId: qr_id,
       actorId: req.user!.id,
       actorRole: req.user!.role,
       targetState: "SORTED",
@@ -68,10 +64,9 @@ export const logSortedHandler: RequestHandler = async (req, res, next) => {
 
 export const finalizeHandler: RequestHandler = async (req, res, next) => {
   try {
-    const { qr_id: token, notes, evidence_url } = finalizeSchema.parse(req.body);
-    const payload = decodeQrToken(token);
+    const { qr_id, notes, evidence_url } = finalizeSchema.parse(req.body);
     const result = await transitionWorkflow({
-      qrId: payload.qr_id,
+      qrId: qr_id,
       actorId: req.user!.id,
       actorRole: req.user!.role,
       targetState: "FINAL_DISPOSITION",
@@ -86,9 +81,8 @@ export const finalizeHandler: RequestHandler = async (req, res, next) => {
 
 export const getEventsHandler: RequestHandler = async (req, res, next) => {
   try {
-    const token = req.params.qrId;
-    const payload = decodeQrToken(token);
-    const result = await getWorkflowEvents(payload.qr_id);
+    const qrId = req.params.qrId;
+    const result = await getWorkflowEvents(qrId);
     res.json(result);
   } catch (err) {
     next(err);

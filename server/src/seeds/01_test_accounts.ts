@@ -6,7 +6,7 @@ const ROLES = [
     { name: "Admin User", email: "admin@ecotrack.dev", password: "Admin@1234!", role: "ADMIN" },
     { name: "Consumer User", email: "consumer@ecotrack.dev", password: "Consumer@1234!", role: "CONSUMER" },
     { name: "Recycler User", email: "recycler@ecotrack.dev", password: "Recycler@1234!", role: "RECYCLER" },
-    { name: "Manufacturer User", email: "manufacturer@ecotrack.dev", password: "Manufacturer@1234!", role: "MANUFACTURER" },
+    { name: "GreenTech Corp", email: "manufacturer@ecotrack.dev", password: "Manufacturer@1234!", role: "MANUFACTURER" },
 ];
 
 export async function seed(knex: Knex): Promise<void> {
