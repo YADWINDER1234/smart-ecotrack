@@ -1,0 +1,103 @@
+.admin-override {
+  background: var(--bg-secondary);
+  border: 2px solid var(--primary);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.admin-override h3 {
+  color: var(--primary);
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 1.3rem;
+}
+
+.admin-override h4 {
+  color: var(--text-primary);
+  margin-top: 16px;
+  margin-bottom: 12px;
+  font-size: 1.05rem;
+}
+
+.admin-override__message {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.admin-override__message--success {
+  background: var(--secondary-light);
+  color: var(--secondary-dark);
+  border-left: 4px solid var(--secondary);
+}
+
+.admin-override__message--error {
+  background: var(--danger-light);
+  color: #991b1b;
+  border-left: 4px solid var(--danger);
+}
+
+.admin-override__tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.admin-override__tab {
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-weight: 500;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  margin-bottom: -2px;
+}
+
+.admin-override__tab:hover {
+  color: var(--primary);
+}
+
+.admin-override__tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+.admin-override__form {
+  max-width: 600px;
+}
+
+.admin-override__form form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-override__form select,
+.admin-override__form textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.admin-override__form select:focus,
+.admin-override__form textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.admin-override__form textarea {
+  min-height: 80px;
+  resize: vertical;
+}

@@ -1,0 +1,41 @@
+openapi: 3.0.3
+info:
+  title: Smart EcoTrack API
+  version: 1.0.0
+  description: >-
+    API for Smart EcoTrack recycling platform. Includes auth, products, QR
+    scanning, workflow transitions, complaints, and analytics.
+servers:
+  - url: /api
+paths:
+  /auth/login:
+    post:
+      summary: Login and receive JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: token and user info
+  /dashboard/admin:
+    get:
+      summary: Admin dashboard metrics
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: dashboard data
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

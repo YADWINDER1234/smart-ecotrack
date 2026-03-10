@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env
+.DS_Store
+
+server/node_modules/
+client/node_modules/
+server/dist/
+client/dist/
+
+smart_ecotrack_pg/
+

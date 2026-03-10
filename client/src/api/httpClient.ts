@@ -1,0 +1,29 @@
+import axios from "axios";
+
+const baseURL = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
+
+let _accessToken: string | null = null;
+
+export function setAccessToken(token: string | null) {
+  _accessToken = token;
+}
+
+export function getAccessToken() {
+  return _accessToken;
+}
+
+export const httpClient = axios.create({
+  baseURL,
+  timeout: 10_000,
+  withCredentials: true // include httpOnly refresh cookie
+});
+
+httpClient.interceptors.request.use((config) => {
+  const token = getAccessToken();
+  if (token) {
+    config.headers = config.headers ?? {};
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+

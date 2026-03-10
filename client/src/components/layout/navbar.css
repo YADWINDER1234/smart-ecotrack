@@ -1,0 +1,78 @@
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 50; /* Ensure it stays above charts/graphs */
+  /* Translucent frosted glass for modern web look, but highly legible */
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-color);
+}
+
+body.theme-dark .nav {
+  background: rgba(9, 9, 11, 0.85); /* Deep zinc with blur */
+}
+
+.nav__inner {
+  max-width: 1200px; /* Matches container strict width */
+  margin: 0 auto;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.nav__brand {
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: 1.25rem;
+}
+
+.nav__links {
+  display: flex;
+  gap: 16px; 
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.nav__link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s ease, background-color 0.15s ease;
+  padding: 6px 12px;
+  border-radius: 8px; /* Soft pill hover */
+  font-size: 0.9rem;
+}
+
+.nav__link:hover {
+  color: var(--text-primary);
+  background: var(--bg-card-hover);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
+  background: var(--danger);
+  color: white; 
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 600; 
+  margin-left: 6px;
+}
+
+/* Secondary header (Breadcrumbs) - Keep it clean */
+.nav__breadcrumb {
+  background: var(--bg-app);
+  border-bottom: 1px solid var(--border-color);
+  padding: 12px 24px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
