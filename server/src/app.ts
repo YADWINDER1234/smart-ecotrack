@@ -54,6 +54,7 @@ const scanLimiter = rateLimit({
 app.use("/api/qr/scan", scanLimiter);
 
 app.use("/api", apiRoutes);
+app.use("/", apiRoutes); // Fallback for clients missing the /api prefix in their VITE_API_BASE_URL
 
 // serve API documentation
 const swaggerDocument = YAML.load("./openapi.yaml");
