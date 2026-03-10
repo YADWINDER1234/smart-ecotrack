@@ -73,12 +73,13 @@ app.use((req, res) => {
 });
 
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  // Always log the full error so it shows up in Render's logs
+  console.error("[ERROR]", err);
   if (isAppError(err)) {
     return res.status(err.status).json({ error: { code: err.code, message: err.message } });
   }
-  // eslint-disable-next-line no-console
-  console.error(err);
-  res.status(500).json({ error: { code: "INTERNAL_ERROR", message: "Internal server error" } });
+  const message = err instanceof Error ? err.message : "Internal server error";
+  res.status(500).json({ error: { code: "INTERNAL_ERROR", message } });
 });
 
 export default app;
