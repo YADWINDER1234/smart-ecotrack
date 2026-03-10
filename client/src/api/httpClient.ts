@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+const baseURL = rawBaseUrl.endsWith("/api") ? rawBaseUrl : `${rawBaseUrl.replace(/\/$/, "")}/api`;
 
 let _accessToken: string | null = null;
 
