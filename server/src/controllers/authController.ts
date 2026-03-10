@@ -19,11 +19,10 @@ export const registerHandler: RequestHandler = async (req, res, next) => {
   try {
     const { user, accessToken, refreshToken } = await registerConsumer(req.body);
     const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-    const isProd = process.env.NODE_ENV === "production";
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: isProd ? true : true, // SameSite "none" requires secure: true even on localhost in many modern browsers
-      sameSite: isProd ? "lax" : "none",
+      secure: true,
+      sameSite: "none",
       expires
     });
     res.status(201).json({ user, accessToken });
@@ -36,11 +35,10 @@ export const loginHandler: RequestHandler = async (req, res, next) => {
   try {
     const { user, accessToken, refreshToken } = await login(req.body);
     const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-    const isProd = process.env.NODE_ENV === "production";
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: isProd ? true : true,
-      sameSite: isProd ? "lax" : "none",
+      secure: true,
+      sameSite: "none",
       expires
     });
     res.json({ user, accessToken });
@@ -67,11 +65,10 @@ export const refreshHandler: RequestHandler = async (req, res, next) => {
     const newHash = sha256Hex(newToken);
     const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     await insertRefreshToken({ id: require("crypto").randomUUID(), user_id: userId, token_hash: newHash, expires_at: expires });
-    const isProd = process.env.NODE_ENV === "production";
     res.cookie("refreshToken", newToken, {
       httpOnly: true,
-      secure: isProd ? true : true,
-      sameSite: isProd ? "lax" : "none",
+      secure: true,
+      sameSite: "none",
       expires
     });
     res.json({ accessToken });
