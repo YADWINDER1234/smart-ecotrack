@@ -17,10 +17,26 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      process.env.CORS_ORIGIN || "http://localhost:5173"
-    ],
+    origin: (origin, callback) => {
+      // allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+
+      const allowedStatic = [
+        "http://localhost:5173",
+        process.env.CORS_ORIGIN || "http://localhost:5173"
+      ];
+
+      // Allow specific static domains, any localhost, or any vercel.app preview URL
+      if (
+        allowedStatic.includes(origin) ||
+        origin.startsWith("http://localhost:") ||
+        origin.endsWith(".vercel.app")
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true
   })
 );

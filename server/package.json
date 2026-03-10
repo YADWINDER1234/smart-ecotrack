@@ -7,7 +7,7 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "migrate": "ts-node ./node_modules/knex/bin/cli.js --knexfile knexfile.ts migrate:latest",
-"seed": "ts-node ./node_modules/knex/bin/cli.js --knexfile knexfile.ts seed:run",
+    "seed": "ts-node ./node_modules/knex/bin/cli.js --knexfile knexfile.ts seed:run",
     "reset": "npm run migrate && npm run seed",
     "test": "jest --runInBand --detectOpenHandles --forceExit"
   },
@@ -45,4 +45,3 @@
     "typescript": "^5.6.3"
   }
 }
-
