@@ -53,8 +53,8 @@ export function DashboardPage() {
     void load();
 
     // subscribe to realtime updates so charts are automatic
-    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
-    const es = new EventSource(`${apiUrl}/notifications/stream`, { withCredentials: true } as any);
+    const apiUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+    const es = new EventSource(`${apiUrl}/api/notifications/stream`, { withCredentials: true } as any);
     es.addEventListener("qr_state_change", () => {
       if (!cancelled) {
         void load();
@@ -72,7 +72,7 @@ export function DashboardPage() {
       <Navbar />
       <main className="container mx-auto flex flex-col md:flex-row gap-8 py-8 px-4 md:px-8">
         <RoleSidebar />
-        
+
         <div className="flex-1 space-y-6">
           <Card className="border-none shadow-sm bg-background">
             <CardHeader>
@@ -93,7 +93,7 @@ export function DashboardPage() {
               <span className="text-muted-foreground">Loading dashboard...</span>
             </Card>
           )}
-          
+
           {error && (
             <div className="flex items-center gap-2 rounded-lg bg-destructive/15 p-4 text-sm text-destructive shadow-sm">
               <AlertCircle className="h-5 w-5 shrink-0" />
@@ -124,15 +124,14 @@ export function DashboardPage() {
                           <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold
                             ${c.status === "OPEN" ? "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200" :
                               c.status === "IN_REVIEW" ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" :
-                              "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200"}`}>
+                                "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200"}`}>
                             {c.status}
                           </span>
                         </div>
                         <div className="mb-3 text-sm flex gap-2 items-center text-muted-foreground">
                           <span className="font-medium text-foreground">Priority:</span>
-                          <span className={`inline-flex h-2 w-2 rounded-full ${
-                            c.priority === 'HIGH' ? 'bg-destructive' : c.priority === 'MEDIUM' ? 'bg-amber-500' : 'bg-emerald-500' 
-                          }`} />
+                          <span className={`inline-flex h-2 w-2 rounded-full ${c.priority === 'HIGH' ? 'bg-destructive' : c.priority === 'MEDIUM' ? 'bg-amber-500' : 'bg-emerald-500'
+                            }`} />
                           {c.priority}
                         </div>
                         {c.description && <p className="mb-4 text-sm text-foreground/90 leading-relaxed">{c.description}</p>}

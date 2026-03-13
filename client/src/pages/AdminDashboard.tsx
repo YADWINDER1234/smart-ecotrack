@@ -8,12 +8,14 @@ import { FunnelChart } from "../components/charts/FunnelChart";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Zap, LayoutDashboard, ClipboardList, Package, Fingerprint, AlertTriangle, ShieldAlert, CheckCircle2 } from "lucide-react";
+import { getAccessToken } from "../api/httpClient";
 
 export function AdminDashboard() {
   const [metrics, setMetrics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
+  const rawBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+  const apiUrl = rawBase.endsWith("/api") ? rawBase : `${rawBase.replace(/\/$/, "")}/api`;
 
   useEffect(() => {
     async function loadMetrics() {
@@ -42,8 +44,8 @@ export function AdminDashboard() {
     void loadMetrics();
 
     // realtime update
-    const apiUrl2 = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
-    const es = new EventSource(`${apiUrl2}/notifications/stream`, { withCredentials: true } as any);
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+    const es = new EventSource(`${baseUrl}/api/notifications/stream`, { withCredentials: true } as any);
     es.addEventListener("qr_state_change", () => {
       void loadMetrics();
     });
@@ -56,7 +58,8 @@ export function AdminDashboard() {
     try {
       const res = await fetch(`${apiUrl}/admin/escalate-now`, {
         method: "POST",
-        credentials: "include"
+        credentials: "include",
+        headers: { Authorization: `Bearer ${getAccessToken()}` }
       });
       if (res.ok) {
         alert("Auto-escalation triggered!");
@@ -73,7 +76,7 @@ export function AdminDashboard() {
       <Navbar />
       <main className="container mx-auto flex flex-col md:flex-row gap-8 py-8 px-4 md:px-8">
         <RoleSidebar />
-        
+
         <div className="flex-1 space-y-6">
           <div className="mb-2">
             <Breadcrumb />
@@ -86,7 +89,7 @@ export function AdminDashboard() {
           </div>
 
           {loading ? (
-             <div className="flex items-center gap-2 text-muted-foreground p-4">
+            <div className="flex items-center gap-2 text-muted-foreground p-4">
               <Loader2 className="h-5 w-5 animate-spin" />
               Fetching metrics...
             </div>
@@ -200,9 +203,9 @@ export function AdminDashboard() {
                     </Link>
                   </Button>
                   <div className="h-px bg-border my-2" />
-                  <Button 
-                    variant="destructive" 
-                    className="w-full justify-start h-12 font-medium" 
+                  <Button
+                    variant="destructive"
+                    className="w-full justify-start h-12 font-medium"
                     onClick={triggerEscalation}
                   >
                     <AlertTriangle className="mr-3 h-5 w-5" />
@@ -229,7 +232,7 @@ export function AdminDashboard() {
               </Card>
             </div>
           </div>
-          
+
           <div className="w-full">
             <AdminOverridePanel />
           </div>
