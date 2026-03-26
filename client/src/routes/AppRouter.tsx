@@ -19,6 +19,7 @@ import { RewardsPage } from "../pages/RewardsPage";
 import { WasteDetectionPage } from "../pages/WasteDetectionPage";
 import { RouteOptimizationPage } from "../pages/RouteOptimizationPage";
 import { BlockchainLedgerPage } from "../pages/BlockchainLedgerPage";
+import { AIChatbotWidget } from "../components/AIChatbotWidget";
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -42,6 +43,7 @@ function RequireRole({
 
 export function AppRouter() {
   return (
+    <>
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
@@ -190,5 +192,7 @@ export function AppRouter() {
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    <AIChatbotWidget />
+    </>
   );
 }
