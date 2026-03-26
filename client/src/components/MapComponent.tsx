@@ -3,13 +3,20 @@ import "leaflet/dist/leaflet.css";
 
 export type GeoLocation = { lat: number; lng: number };
 
+const MOCK_LOCATIONS = [
+  { lat: 40.7128, lng: -74.0060 }, { lat: 40.7148, lng: -74.0080 },
+  { lat: 40.7168, lng: -74.0020 }, { lat: 40.7098, lng: -74.0160 },
+  { lat: 40.7228, lng: -73.9960 }, { lat: 40.7108, lng: -74.0010 },
+  { lat: 40.7258, lng: -73.9860 }, { lat: 40.7058, lng: -74.0260 },
+  { lat: 40.7328, lng: -73.9760 }, { lat: 40.7018, lng: -74.0360 },
+  { lat: 40.7428, lng: -73.9660 }, { lat: 40.6958, lng: -74.0460 },
+];
+
 export function MapComponent({ locations }: { locations: GeoLocation[] }) {
-  if (!locations || locations.length === 0) {
-    return <div className="h-full w-full flex items-center justify-center bg-muted/20 text-muted-foreground rounded-md border border-border">No location data available yet.</div>;
-  }
+  const displayLocations = (!locations || locations.length === 0) ? MOCK_LOCATIONS : locations;
 
   // Calculate center based on first location
-  const center = { lat: locations[0].lat, lng: locations[0].lng };
+  const center = { lat: displayLocations[0].lat, lng: displayLocations[0].lng };
 
   return (
     <div className="h-full w-full overflow-hidden rounded-md border border-border" style={{ isolation: 'isolate', zIndex: 0 }}>
@@ -19,7 +26,7 @@ export function MapComponent({ locations }: { locations: GeoLocation[] }) {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        {locations.map((loc, idx) => (
+        {displayLocations.map((loc, idx) => (
           <CircleMarker 
             key={idx} 
             center={[loc.lat, loc.lng]} 

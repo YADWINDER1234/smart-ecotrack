@@ -28,8 +28,8 @@ export function RecyclerPerformanceChart({
   }));
 
   return (
-    <div className="grid" style={{ marginTop: 0 }}>
-      <div className="card" style={{ gridColumn: "span 6" }}>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-2">
+      <div className="rounded-xl border bg-card text-card-foreground shadow p-6">
         <h4 style={{ marginTop: 0 }}>Throughput</h4>
         <div style={{ width: "100%", height: 260 }}>
           <ResponsiveContainer>
@@ -46,7 +46,7 @@ export function RecyclerPerformanceChart({
           </ResponsiveContainer>
         </div>
       </div>
-      <div className="card" style={{ gridColumn: "span 6" }}>
+      <div className="rounded-xl border bg-card text-card-foreground shadow p-6">
         <h4 style={{ marginTop: 0 }}>Avg hours (received → final)</h4>
         <div style={{ width: "100%", height: 260 }}>
           <ResponsiveContainer>
