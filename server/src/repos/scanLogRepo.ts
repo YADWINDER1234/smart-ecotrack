@@ -8,6 +8,8 @@ export async function insertScanLog(input: {
   outcome: string;
   ip: string | null;
   user_agent: string | null;
+  lat?: number | null;
+  lng?: number | null;
 }): Promise<void> {
   await db("scan_logs").insert(input);
 }

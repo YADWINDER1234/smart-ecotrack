@@ -9,8 +9,9 @@ import { CategoryPieChart } from "../components/charts/CategoryPieChart";
 import { FunnelChart } from "../components/charts/FunnelChart";
 import { RecyclerPerformanceChart } from "../components/charts/RecyclerPerformanceChart";
 import { ComplaintStatusChart } from "../components/charts/ComplaintStatusChart";
+import { MapComponent } from "../components/MapComponent";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, Star } from "lucide-react";
 
 export function DashboardPage() {
   const { user } = useAuth();
@@ -84,6 +85,12 @@ export function DashboardPage() {
                 {user?.role === "CONSUMER" && " Scan a QR to view product guidance and eco-score."}
                 {user?.role === "RECYCLER" && " Use the Recycler page to progress lifecycle events."}
               </CardDescription>
+              {user && (
+                <div className="mt-4 inline-flex items-center gap-2 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400 px-4 py-2 rounded-xl text-sm font-bold shadow-sm border border-yellow-200 dark:border-yellow-800">
+                  <Star className="h-5 w-5 fill-yellow-400 text-yellow-500" />
+                  {(user as any).points ?? 0} Reward Points
+                </div>
+              )}
             </CardHeader>
           </Card>
 
@@ -248,6 +255,18 @@ export function DashboardPage() {
                   </CardContent>
                 </Card>
               </div>
+              
+              <Card className="border-none shadow-sm flex flex-col h-[500px] mt-6">
+                <CardHeader>
+                  <CardTitle>Geospatial Scan Activity</CardTitle>
+                  <CardDescription>Visual heatmap of recent product scans</CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1 pb-6 px-6">
+                  <div className="h-full w-full relative z-0">
+                    <MapComponent locations={data.geolocations || []} />
+                  </div>
+                </CardContent>
+              </Card>
             </>
           )}
         </div>

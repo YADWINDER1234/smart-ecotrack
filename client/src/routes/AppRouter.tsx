@@ -14,6 +14,11 @@ import { RecyclerEventsPage } from "../pages/RecyclerEventsPage";
 import { RecyclerComplaintsPage } from "../pages/RecyclerComplaintsPage";
 import { ManufacturerProductPage } from "../pages/ManufacturerProductPage";
 import { ManufacturerQRGenerationPage } from "../pages/ManufacturerQRGenerationPage";
+import { SmartBinDashboard } from "../pages/SmartBinDashboard";
+import { RewardsPage } from "../pages/RewardsPage";
+import { WasteDetectionPage } from "../pages/WasteDetectionPage";
+import { RouteOptimizationPage } from "../pages/RouteOptimizationPage";
+import { BlockchainLedgerPage } from "../pages/BlockchainLedgerPage";
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -140,8 +145,50 @@ export function AppRouter() {
           </RequireAuth>
         }
       />
+
+      {/* New Feature Routes */}
+      <Route
+        path="/bins"
+        element={
+          <RequireAuth>
+            <SmartBinDashboard />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/rewards"
+        element={
+          <RequireAuth>
+            <RewardsPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/waste-detection"
+        element={
+          <RequireAuth>
+            <WasteDetectionPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/route-optimization"
+        element={
+          <RequireAuth>
+            <RouteOptimizationPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/blockchain"
+        element={
+          <RequireAuth>
+            <BlockchainLedgerPage />
+          </RequireAuth>
+        }
+      />
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
-

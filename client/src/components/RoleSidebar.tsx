@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Shield, Package, AlertCircle, FileText, CalendarCheck } from "lucide-react";
+import { LayoutDashboard, Shield, Package, AlertCircle, FileText, CalendarCheck, Trash2, Trophy, ScanLine, Route, ShieldCheck } from "lucide-react";
 
 export function RoleSidebar({ className }: { className?: string }) {
   const { user, displayUser } = useAuth();
@@ -28,7 +28,15 @@ export function RoleSidebar({ className }: { className?: string }) {
               <span>Dashboard</span>
             </NavLink>
           </li>
-          
+
+          {/* Shared links for all roles */}
+          <li>
+            <NavLink to="/rewards" className={getLinkClass}>
+              <Trophy className="h-4 w-4" />
+              <span>Rewards</span>
+            </NavLink>
+          </li>
+
           {viewedRole === "ADMIN" && (
             <>
               <li>
@@ -55,9 +63,27 @@ export function RoleSidebar({ className }: { className?: string }) {
                   <span>Audit Logs</span>
                 </NavLink>
               </li>
+              <li>
+                <NavLink to="/bins" className={getLinkClass}>
+                  <Trash2 className="h-4 w-4" />
+                  <span>Smart Bins</span>
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/route-optimization" className={getLinkClass}>
+                  <Route className="h-4 w-4" />
+                  <span>Route Optimizer</span>
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/blockchain" className={getLinkClass}>
+                  <ShieldCheck className="h-4 w-4" />
+                  <span>Blockchain</span>
+                </NavLink>
+              </li>
             </>
           )}
-          
+
           {viewedRole === "RECYCLER" && (
             <>
               <li>
@@ -72,6 +98,18 @@ export function RoleSidebar({ className }: { className?: string }) {
                   <span>Complaints</span>
                 </NavLink>
               </li>
+              <li>
+                <NavLink to="/bins" className={getLinkClass}>
+                  <Trash2 className="h-4 w-4" />
+                  <span>Smart Bins</span>
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/route-optimization" className={getLinkClass}>
+                  <Route className="h-4 w-4" />
+                  <span>Route Optimizer</span>
+                </NavLink>
+              </li>
             </>
           )}
 
@@ -81,6 +119,17 @@ export function RoleSidebar({ className }: { className?: string }) {
                 <NavLink to="/manufacturer/products" className={getLinkClass}>
                   <Package className="h-4 w-4" />
                   <span>My Products</span>
+                </NavLink>
+              </li>
+            </>
+          )}
+
+          {viewedRole === "CONSUMER" && (
+            <>
+              <li>
+                <NavLink to="/waste-detection" className={getLinkClass}>
+                  <ScanLine className="h-4 w-4" />
+                  <span>Waste Detection</span>
                 </NavLink>
               </li>
             </>

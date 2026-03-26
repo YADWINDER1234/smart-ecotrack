@@ -7,6 +7,7 @@ export type UserRow = {
   email: string;
   password_hash: string;
   role: Role;
+  points: number;
   created_at: Date;
   updated_at: Date;
 };
@@ -29,5 +30,10 @@ export async function insertUser(input: {
   role: Role;
 }): Promise<void> {
   await db("users").insert(input);
+}
+
+export async function incrementUserPoints(userId: string, points: number): Promise<void> {
+  if (points <= 0) return;
+  await db("users").where({ id: userId }).increment("points", points);
 }
 

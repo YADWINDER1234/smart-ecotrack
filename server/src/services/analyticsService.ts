@@ -143,6 +143,13 @@ export async function getAdminDashboard(manufacturer?: string) {
     count: Number(r.count)
   }));
 
+  const geolocationsData = await db("scan_logs")
+    .select("lat", "lng")
+    .whereNotNull("lat")
+    .whereNotNull("lng")
+    .orderBy("timestamp", "desc")
+    .limit(500);
+
   return {
     totals: {
       totalScans,
@@ -168,7 +175,8 @@ export async function getAdminDashboard(manufacturer?: string) {
       finalized: Number(r.finalized ?? 0),
       avg_hours_received_to_final:
         r.avg_hours_received_to_final === null ? null : Number(r.avg_hours_received_to_final)
-    })) as RecyclerPerf[]
+    })) as RecyclerPerf[],
+    geolocations: geolocationsData.map(g => ({ lat: Number(g.lat), lng: Number(g.lng) }))
   };
 }
 

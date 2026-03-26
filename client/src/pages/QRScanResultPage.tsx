@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, AlertCircle, QrCode, Search, CheckCircle2, Factory, Leaf } from "lucide-react";
+import { Loader2, AlertCircle, QrCode, Search, CheckCircle2, Factory, Leaf, BatteryWarning } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function QRScanResultPage() {
@@ -29,18 +29,7 @@ export function QRScanResultPage() {
 
   useEffect(() => {
     if (token && !result && !loading) {
-      (async () => {
-        setLoading(true);
-        setError(null);
-        try {
-          const { data } = await httpClient.post("/qr/scan", { token });
-          setResult(data);
-        } catch (err: any) {
-          setError(err?.response?.data?.error?.message ?? "Scan failed");
-        } finally {
-          setLoading(false);
-        }
-      })();
+      handleManualScan();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
@@ -53,8 +42,22 @@ export function QRScanResultPage() {
     setLoading(true);
     setError(null);
     setResult(null);
+
+    let lat, lng;
     try {
-      const { data } = await httpClient.post("/qr/scan", { token });
+      if ("geolocation" in navigator) {
+        const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+        });
+        lat = pos.coords.latitude;
+        lng = pos.coords.longitude;
+      }
+    } catch (e) {
+      console.warn("Could not get location", e);
+    }
+
+    try {
+      const { data } = await httpClient.post("/qr/scan", { token, lat, lng });
       setResult(data);
     } catch (err: any) {
       setError(err?.response?.data?.error?.message ?? "Scan failed");
@@ -162,6 +165,16 @@ export function QRScanResultPage() {
             <div className="flex items-center gap-3 rounded-lg bg-destructive/15 p-4 text-sm text-destructive shadow-sm max-w-xl mx-auto">
               <AlertCircle className="h-5 w-5 shrink-0" />
               <span className="font-medium">{error}</span>
+            </div>
+          )}
+
+          {result && (result.product?.category === "Electronics" || result.product?.category === "Batteries") && (
+            <div className="flex items-center gap-3 rounded-lg border border-red-500/50 bg-red-500/10 p-5 text-sm text-red-600 dark:text-red-400 shadow-sm max-w-5xl mx-auto animate-in fade-in slide-in-from-top-2">
+              <BatteryWarning className="h-6 w-6 shrink-0 text-red-500" />
+              <div>
+                <strong className="block text-base mb-0.5">⚠️ Hazardous E-Waste Material</strong>
+                <span>Please do not dispose of this in regular bins. Route to a designated E-Waste center to earn a <strong>50 Point Bonus</strong>!</span>
+              </div>
             </div>
           )}
 

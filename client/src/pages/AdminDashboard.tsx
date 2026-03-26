@@ -5,6 +5,7 @@ import RoleSidebar from "../components/RoleSidebar";
 import { AdminOverridePanel } from "../components/AdminOverridePanel";
 import { Breadcrumb } from "../components/Breadcrumb";
 import { FunnelChart } from "../components/charts/FunnelChart";
+import { MapComponent } from "../components/MapComponent";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Zap, LayoutDashboard, ClipboardList, Package, Fingerprint, AlertTriangle, ShieldAlert, CheckCircle2 } from "lucide-react";
@@ -171,6 +172,18 @@ export function AdminDashboard() {
                 <CardContent>
                   <div className="border border-border/50 rounded-lg p-1 bg-background">
                     <FunnelChart data={metrics ? metrics.funnel || [] : []} />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-none shadow-sm flex flex-col h-[500px]">
+                <CardHeader>
+                  <CardTitle className="text-lg">Geospatial Scan Activity</CardTitle>
+                  <CardDescription>Visual heatmap of recent product scans</CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1 pb-6 px-6">
+                  <div className="h-full w-full relative z-0">
+                    <MapComponent locations={metrics?.geolocations || []} />
                   </div>
                 </CardContent>
               </Card>

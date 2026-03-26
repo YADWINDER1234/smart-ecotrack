@@ -3,10 +3,14 @@ import { AppError } from "../utils/errors";
 import type { Role } from "../types/role";
 import type { WorkflowState } from "../repos/qrRepo";
 import { findQrById } from "../repos/qrRepo";
+import { findProductById } from "../repos/productRepo";
 import { db } from "../db/connection";
 import { listRecyclingEventsForQr } from "../repos/recyclingRepo";
 import { audit } from "./auditService";
 import { publish } from "./notificationService"; // for realtime updates
+import { awardPoints } from "./rewardService";
+import { recordToBlockchain } from "./blockchainService";
+import { classifyWasteType } from "./wasteClassificationService";
 
 // only a subset of states are user-visible transitions; other states exist but
 // they start empty.
@@ -56,7 +60,15 @@ export async function transitionWorkflow(input: {
     );
   }
 
+  // Determine waste type for reward multiplier
+  const product = await findProductById(qr.product_id);
+  const wasteInfo = product
+    ? classifyWasteType(product.category, product.metadata_json)
+    : null;
+  const wasteCategory = wasteInfo?.wasteType || "GENERAL";
+
   const now = new Date();
+  const eventId = randomUUID();
 
   await db.transaction(async (trx) => {
     await trx("qr_codes").where({ id: qr.id }).update({
@@ -65,26 +77,58 @@ export async function transitionWorkflow(input: {
     });
 
     await trx("recycling_events").insert({
-      id: randomUUID(),
+      id: eventId,
       qr_id: qr.id,
       actor_id: input.actorId,
       event_type: target,
       timestamp: now,
       evidence_url: input.evidence_url ?? null,
       notes: input.notes ?? null,
+      waste_category: wasteCategory,
+      reward_points_awarded: 0,
       created_at: trx.fn.now()
     });
   });
+
+  // Award reward points (with waste-type multiplier)
+  try {
+    const reward = await awardPoints({
+      userId: input.actorId,
+      eventType: target,
+      wasteType: wasteCategory,
+      sourceEventId: eventId
+    });
+    await db("recycling_events")
+      .where({ id: eventId })
+      .update({ reward_points_awarded: reward.pointsAwarded });
+  } catch (err) {
+    console.error("[REWARD] Failed to award points:", err);
+  }
+
+  // Record to blockchain hash-chain at FINAL_DISPOSITION
+  if (target === "FINAL_DISPOSITION") {
+    try {
+      await recordToBlockchain(eventId, {
+        qrId: qr.id,
+        actorId: input.actorId,
+        productId: qr.product_id,
+        eventType: target,
+        wasteCategory,
+        timestamp: now.toISOString()
+      });
+    } catch (err) {
+      console.error("[BLOCKCHAIN] Failed to record:", err);
+    }
+  }
 
   await audit({
     actorId: input.actorId,
     action: "WORKFLOW_TRANSITION",
     entityType: "qr_code",
     entityId: qr.id,
-    metadata: { from: current, to: target }
+    metadata: { from: current, to: target, wasteCategory }
   });
 
-  // notify anybody listening (dashboard charts etc.)
   publish("qr_state_change", { qrId: qr.id, from: current, to: target });
 
   const updated = await findQrById(qr.id);
@@ -97,4 +141,3 @@ export async function getWorkflowEvents(qrId: string) {
   const events = await listRecyclingEventsForQr(qrId);
   return { qr, events };
 }
-

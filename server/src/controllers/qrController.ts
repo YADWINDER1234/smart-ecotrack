@@ -21,7 +21,9 @@ export const generateQrSchema = z.object({
 });
 
 export const scanSchema = z.object({
-  token: z.string().min(10)
+  token: z.string().min(10),
+  lat: z.number().optional(),
+  lng: z.number().optional()
 });
 
 export const generateQrHandler: RequestHandler = async (req, res, next) => {
@@ -74,7 +76,7 @@ export const scanQrHandler: RequestHandler = async (req, res, next) => {
   const userId = req.user?.id ?? null;
 
   try {
-    const { token } = scanSchema.parse(req.body);
+    const { token, lat, lng } = scanSchema.parse(req.body);
     const payload = decodeQrToken(token);
 
     const qr = await findQrById(payload.qr_id);
@@ -87,7 +89,9 @@ export const scanQrHandler: RequestHandler = async (req, res, next) => {
         timestamp: new Date(),
         outcome: "REVOKED",
         ip,
-        user_agent: userAgent
+        user_agent: userAgent,
+        lat,
+        lng
       });
       throw new AppError("QR has been revoked by admin (fraud)", 401, "QR_REVOKED");
     }
@@ -100,7 +104,9 @@ export const scanQrHandler: RequestHandler = async (req, res, next) => {
         timestamp: new Date(),
         outcome: "REVOKED",
         ip,
-        user_agent: userAgent
+        user_agent: userAgent,
+        lat,
+        lng
       });
       throw new AppError("QR revoked", 401, "QR_REVOKED");
     }
@@ -113,7 +119,9 @@ export const scanQrHandler: RequestHandler = async (req, res, next) => {
         timestamp: new Date(),
         outcome: "EXPIRED",
         ip,
-        user_agent: userAgent
+        user_agent: userAgent,
+        lat,
+        lng
       });
       throw new AppError("QR expired", 401, "QR_EXPIRED");
     }
@@ -127,7 +135,9 @@ export const scanQrHandler: RequestHandler = async (req, res, next) => {
         timestamp: new Date(),
         outcome: "INVALID_SIGNATURE",
         ip,
-        user_agent: userAgent
+        user_agent: userAgent,
+        lat,
+        lng
       });
       throw new AppError("Invalid QR signature", 401, "QR_SIGNATURE_INVALID");
     }
@@ -147,7 +157,9 @@ export const scanQrHandler: RequestHandler = async (req, res, next) => {
       timestamp: new Date(),
       outcome: "SUCCESS",
       ip,
-      user_agent: userAgent
+      user_agent: userAgent,
+      lat,
+      lng
     });
 
     res.json({

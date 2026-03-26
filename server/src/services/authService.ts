@@ -12,10 +12,11 @@ export type PublicUser = {
   name: string;
   email: string;
   role: Role;
+  points: number;
 };
 
 function toPublicUser(row: any): PublicUser {
-  return { id: row.id, name: row.name, email: row.email, role: row.role };
+  return { id: row.id, name: row.name, email: row.email, role: row.role, points: row.points || 0 };
 }
 
 export async function registerConsumer(input: {
