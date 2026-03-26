@@ -3,7 +3,7 @@ import { useAuth } from "../hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { LayoutDashboard, Shield, Package, AlertCircle, FileText, CalendarCheck, Trash2, Trophy, ScanLine, Route, ShieldCheck } from "lucide-react";
 
-export function RoleSidebar({ className }: { className?: string }) {
+export function RoleSidebar({ className, mobile }: { className?: string; mobile?: boolean }) {
   const { user, displayUser } = useAuth();
   const viewedRole = displayUser?.role || user?.role;
 
@@ -16,14 +16,14 @@ export function RoleSidebar({ className }: { className?: string }) {
     );
 
   return (
-    <aside className={cn("hidden md:block w-64 flex-shrink-0 border-r pr-6", className)}>
-      <nav className="sticky top-24">
+    <aside className={cn(mobile ? "w-full" : "hidden md:block w-64 flex-shrink-0 border-r pr-6", className)}>
+      <nav className={mobile ? "" : "sticky top-24"}>
         <div className="mb-4 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Navigation
         </div>
         <ul className="space-y-1">
           <li>
-            <NavLink to="/dashboard" className={getLinkClass}>
+            <NavLink to="/dashboard" onClick={() => window.dispatchEvent(new Event("close-drawer"))} className={getLinkClass}>
               <LayoutDashboard className="h-4 w-4" />
               <span>Dashboard</span>
             </NavLink>
@@ -31,7 +31,7 @@ export function RoleSidebar({ className }: { className?: string }) {
 
           {/* Shared links for all roles */}
           <li>
-            <NavLink to="/rewards" className={getLinkClass}>
+            <NavLink to="/rewards" onClick={() => window.dispatchEvent(new Event("close-drawer"))} className={getLinkClass}>
               <Trophy className="h-4 w-4" />
               <span>Rewards</span>
             </NavLink>
@@ -40,43 +40,43 @@ export function RoleSidebar({ className }: { className?: string }) {
           {viewedRole === "ADMIN" && (
             <>
               <li>
-                <NavLink to="/admin" className={getLinkClass} end>
+                <NavLink to="/admin" onClick={() => window.dispatchEvent(new Event("close-drawer"))} className={getLinkClass} end>
                   <Shield className="h-4 w-4" />
                   <span>Admin Home</span>
                 </NavLink>
               </li>
               <li>
-                <NavLink to="/admin/products" className={getLinkClass}>
+                <NavLink to="/admin/products" onClick={() => window.dispatchEvent(new Event("close-drawer"))} className={getLinkClass}>
                   <Package className="h-4 w-4" />
                   <span>Products</span>
                 </NavLink>
               </li>
               <li>
-                <NavLink to="/admin/complaints" className={getLinkClass}>
+                <NavLink to="/admin/complaints" onClick={() => window.dispatchEvent(new Event("close-drawer"))} className={getLinkClass}>
                   <AlertCircle className="h-4 w-4" />
                   <span>Complaints</span>
                 </NavLink>
               </li>
               <li>
-                <NavLink to="/admin/audit" className={getLinkClass}>
+                <NavLink to="/admin/audit" onClick={() => window.dispatchEvent(new Event("close-drawer"))} className={getLinkClass}>
                   <FileText className="h-4 w-4" />
                   <span>Audit Logs</span>
                 </NavLink>
               </li>
               <li>
-                <NavLink to="/bins" className={getLinkClass}>
+                <NavLink to="/bins" onClick={() => window.dispatchEvent(new Event("close-drawer"))} className={getLinkClass}>
                   <Trash2 className="h-4 w-4" />
                   <span>Smart Bins</span>
                 </NavLink>
               </li>
               <li>
-                <NavLink to="/route-optimization" className={getLinkClass}>
+                <NavLink to="/route-optimization" onClick={() => window.dispatchEvent(new Event("close-drawer"))} className={getLinkClass}>
                   <Route className="h-4 w-4" />
                   <span>Route Optimizer</span>
                 </NavLink>
               </li>
               <li>
-                <NavLink to="/blockchain" className={getLinkClass}>
+                <NavLink to="/blockchain" onClick={() => window.dispatchEvent(new Event("close-drawer"))} className={getLinkClass}>
                   <ShieldCheck className="h-4 w-4" />
                   <span>Blockchain</span>
                 </NavLink>
@@ -87,25 +87,25 @@ export function RoleSidebar({ className }: { className?: string }) {
           {viewedRole === "RECYCLER" && (
             <>
               <li>
-                <NavLink to="/recycler/events" className={getLinkClass}>
+                <NavLink to="/recycler/events" onClick={() => window.dispatchEvent(new Event("close-drawer"))} className={getLinkClass}>
                   <CalendarCheck className="h-4 w-4" />
                   <span>My Events</span>
                 </NavLink>
               </li>
               <li>
-                <NavLink to="/recycler/complaints" className={getLinkClass}>
+                <NavLink to="/recycler/complaints" onClick={() => window.dispatchEvent(new Event("close-drawer"))} className={getLinkClass}>
                   <AlertCircle className="h-4 w-4" />
                   <span>Complaints</span>
                 </NavLink>
               </li>
               <li>
-                <NavLink to="/bins" className={getLinkClass}>
+                <NavLink to="/bins" onClick={() => window.dispatchEvent(new Event("close-drawer"))} className={getLinkClass}>
                   <Trash2 className="h-4 w-4" />
                   <span>Smart Bins</span>
                 </NavLink>
               </li>
               <li>
-                <NavLink to="/route-optimization" className={getLinkClass}>
+                <NavLink to="/route-optimization" onClick={() => window.dispatchEvent(new Event("close-drawer"))} className={getLinkClass}>
                   <Route className="h-4 w-4" />
                   <span>Route Optimizer</span>
                 </NavLink>
@@ -116,7 +116,7 @@ export function RoleSidebar({ className }: { className?: string }) {
           {viewedRole === "MANUFACTURER" && (
             <>
               <li>
-                <NavLink to="/manufacturer/products" className={getLinkClass}>
+                <NavLink to="/manufacturer/products" onClick={() => window.dispatchEvent(new Event("close-drawer"))} className={getLinkClass}>
                   <Package className="h-4 w-4" />
                   <span>My Products</span>
                 </NavLink>
@@ -127,7 +127,7 @@ export function RoleSidebar({ className }: { className?: string }) {
           {viewedRole === "CONSUMER" && (
             <>
               <li>
-                <NavLink to="/waste-detection" className={getLinkClass}>
+                <NavLink to="/waste-detection" onClick={() => window.dispatchEvent(new Event("close-drawer"))} className={getLinkClass}>
                   <ScanLine className="h-4 w-4" />
                   <span>Waste Detection</span>
                 </NavLink>
