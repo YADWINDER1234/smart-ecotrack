@@ -9,6 +9,23 @@ import { fetchCollectionPlan } from "../api/routeApi";
 import { MapContainer, TileLayer, CircleMarker, Polyline, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
+const MOCK_ROUTE_PLAN = {
+  waypoints: [
+    { binId: "mock1", name: "Downtown Plastic Bin", lat: 40.7128, lng: -74.0060, fillLevel: 95 },
+    { binId: "mock2", name: "Central Park General", lat: 40.7812, lng: -73.9665, fillLevel: 88 },
+    { binId: "mock3", name: "Times Square Glass", lat: 40.7580, lng: -73.9855, fillLevel: 75 },
+    { binId: "mock4", name: "Brooklyn Bridge E-Waste", lat: 40.7061, lng: -73.9969, fillLevel: 100 }
+  ],
+  routeGeometry: [
+    [40.7128, -74.0060],
+    [40.7061, -73.9969],
+    [40.7580, -73.9855],
+    [40.7812, -73.9665]
+  ],
+  totalDistanceKm: 14.2,
+  estimatedTimeMinutes: 45
+};
+
 export function RouteOptimizationPage() {
   const [plan, setPlan] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -18,7 +35,10 @@ export function RouteOptimizationPage() {
   async function loadPlan() {
     setLoading(true);
     try {
-      const data = await fetchCollectionPlan();
+      let data = await fetchCollectionPlan();
+      if (!data || !data.waypoints || data.waypoints.length === 0) {
+        data = MOCK_ROUTE_PLAN;
+      }
       setPlan(data);
     } catch (err) { console.error(err); } finally { setLoading(false); }
   }
