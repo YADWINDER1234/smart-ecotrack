@@ -11,19 +11,19 @@ import "leaflet/dist/leaflet.css";
 
 const MOCK_ROUTE_PLAN = {
   waypoints: [
-    { binId: "mock1", name: "Downtown Plastic Bin", lat: 40.7128, lng: -74.0060, fillLevel: 95 },
-    { binId: "mock2", name: "Central Park General", lat: 40.7812, lng: -73.9665, fillLevel: 88 },
-    { binId: "mock3", name: "Times Square Glass", lat: 40.7580, lng: -73.9855, fillLevel: 75 },
-    { binId: "mock4", name: "Brooklyn Bridge E-Waste", lat: 40.7061, lng: -73.9969, fillLevel: 100 }
+    { binId: "mock1", name: "Connaught Place Plastic", lat: 28.6304, lng: 77.2177, fillLevel: 95 },
+    { binId: "mock2", name: "Chandni Chowk General", lat: 28.6505, lng: 77.2303, fillLevel: 88 },
+    { binId: "mock3", name: "India Gate Glass", lat: 28.6129, lng: 77.2295, fillLevel: 75 },
+    { binId: "mock4", name: "Hauz Khas E-Waste", lat: 28.5494, lng: 77.2001, fillLevel: 100 }
   ],
   routeGeometry: [
-    [40.7128, -74.0060],
-    [40.7061, -73.9969],
-    [40.7580, -73.9855],
-    [40.7812, -73.9665]
+    [28.6304, 77.2177],
+    [28.6505, 77.2303],
+    [28.6129, 77.2295],
+    [28.5494, 77.2001]
   ],
-  totalDistanceKm: 14.2,
-  estimatedTimeMinutes: 45
+  totalDistanceKm: 18.5,
+  estimatedTimeMinutes: 55
 };
 
 export function RouteOptimizationPage() {
