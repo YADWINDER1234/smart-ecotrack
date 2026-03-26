@@ -4,9 +4,9 @@ import RoleSidebar from "../components/RoleSidebar";
 import { Breadcrumb } from "../components/Breadcrumb";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Trash2, Plus, AlertTriangle, CheckCircle2, MapPin } from "lucide-react";
+import { Loader2, Trash2, Plus, AlertTriangle, CheckCircle2, MapPin, Crosshair } from "lucide-react";
 import { fetchBins, fetchBinStats, createBin } from "../api/binApi";
-import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, CircleMarker, Popup, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
 type Bin = {
@@ -44,6 +44,20 @@ const BIN_TYPE_COLORS: Record<string, string> = {
   ORGANIC: "#22c55e", EWASTE: "#a855f7", GENERAL: "#64748b"
 };
 
+function LocationPickerMarker({ position, setPosition }: { position: [number, number] | null, setPosition: (pos: [number, number]) => void }) {
+  useMapEvents({
+    click(e) {
+      setPosition([e.latlng.lat, e.latlng.lng]);
+    },
+  });
+
+  return position === null ? null : (
+    <CircleMarker center={position} radius={8} pathOptions={{ color: "#fff", weight: 3, fillColor: "#ef4444", fillOpacity: 0.9 }}>
+      <Popup>New Bin Location</Popup>
+    </CircleMarker>
+  );
+}
+
 export function SmartBinDashboard() {
   const [bins, setBins] = useState<Bin[]>([]);
   const [stats, setStats] = useState<any>(null);
@@ -51,6 +65,7 @@ export function SmartBinDashboard() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: "", location_lat: "", location_lng: "", bin_type: "GENERAL" });
   const [creating, setCreating] = useState(false);
+  const [gettingLocation, setGettingLocation] = useState(false);
 
   useEffect(() => { void loadData(); }, []);
 
@@ -76,6 +91,30 @@ export function SmartBinDashboard() {
       setForm({ name: "", location_lat: "", location_lng: "", bin_type: "GENERAL" });
       await loadData();
     } catch (err) { console.error(err); } finally { setCreating(false); }
+  }
+
+  function handleGetCurrentLocation() {
+    setGettingLocation(true);
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setForm(p => ({
+            ...p,
+            location_lat: position.coords.latitude.toFixed(6),
+            location_lng: position.coords.longitude.toFixed(6)
+          }));
+          setGettingLocation(false);
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          alert("Could not get your location. Please check browser permissions.");
+          setGettingLocation(false);
+        }
+      );
+    } else {
+      alert("Geolocation is not supported by your browser.");
+      setGettingLocation(false);
+    }
   }
 
   return (
@@ -125,25 +164,61 @@ export function SmartBinDashboard() {
           {showForm && (
             <Card className="border-2 border-primary/30 shadow-md animate-in fade-in slide-in-from-top-4 duration-300">
               <CardHeader><CardTitle>Add New Bin</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <input id="bin-name" placeholder="Bin Name" value={form.name} onChange={e => setForm(p => ({...p, name: e.target.value}))}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
-                  <select id="bin-type" value={form.bin_type} onChange={e => setForm(p => ({...p, bin_type: e.target.value}))}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-                    {["GENERAL","PLASTIC","METAL","GLASS","PAPER","ORGANIC","EWASTE"].map(t =>
-                      <option key={t} value={t}>{t}</option>)}
-                  </select>
-                  <input id="bin-lat" placeholder="Latitude" type="number" step="any" value={form.location_lat}
-                    onChange={e => setForm(p => ({...p, location_lat: e.target.value}))}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
-                  <input id="bin-lng" placeholder="Longitude" type="number" step="any" value={form.location_lng}
-                    onChange={e => setForm(p => ({...p, location_lng: e.target.value}))}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Bin Name</label>
+                    <input id="bin-name" placeholder="e.g. Main Street Plastic Bin" value={form.name} onChange={e => setForm(p => ({...p, name: e.target.value}))}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Bin Type</label>
+                    <select id="bin-type" value={form.bin_type} onChange={e => setForm(p => ({...p, bin_type: e.target.value}))}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                      {["GENERAL","PLASTIC","METAL","GLASS","PAPER","ORGANIC","EWASTE"].map(t =>
+                        <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button onClick={handleCreate} disabled={creating || !form.name}>
-                    {creating && <Loader2 className="h-4 w-4 animate-spin mr-2" />} Create
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">Location Coordinates</label>
+                    <Button type="button" variant="outline" size="sm" onClick={handleGetCurrentLocation} disabled={gettingLocation} className="gap-2 text-xs h-8">
+                      {gettingLocation ? <Loader2 className="h-3 w-3 animate-spin" /> : <Crosshair className="h-3 w-3" />}
+                      Use My Current Location
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <input id="bin-lat" placeholder="Latitude" type="number" step="any" value={form.location_lat}
+                      onChange={e => setForm(p => ({...p, location_lat: e.target.value}))}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+                    <input id="bin-lng" placeholder="Longitude" type="number" step="any" value={form.location_lng}
+                      onChange={e => setForm(p => ({...p, location_lng: e.target.value}))}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+                  </div>
+                  
+                  <div className="h-[200px] w-full rounded-md border border-border mt-2 overflow-hidden" style={{ isolation: 'isolate', zIndex: 0 }}>
+                    <MapContainer 
+                      center={form.location_lat && form.location_lng && !isNaN(parseFloat(form.location_lat)) && !isNaN(parseFloat(form.location_lng)) ? [parseFloat(form.location_lat), parseFloat(form.location_lng)] : [40.7128, -74.0060]} 
+                      zoom={13} 
+                      style={{ height: "100%", width: "100%", zIndex: 0, cursor: 'crosshair' }}
+                    >
+                      <TileLayer attribution='&copy; OpenStreetMap' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                      <LocationPickerMarker 
+                        position={form.location_lat && form.location_lng && !isNaN(parseFloat(form.location_lat)) && !isNaN(parseFloat(form.location_lng)) ? [parseFloat(form.location_lat), parseFloat(form.location_lng)] : null} 
+                        setPosition={(pos) => setForm(p => ({ ...p, location_lat: pos[0].toFixed(6), location_lng: pos[1].toFixed(6) }))} 
+                      />
+                    </MapContainer>
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1 text-center bg-muted/30 py-1.5 rounded">
+                    👆 Click anywhere on the map to set the exact pin location
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-4 border-t">
+                  <Button onClick={handleCreate} disabled={creating || !form.name || !form.location_lat || !form.location_lng}>
+                    {creating && <Loader2 className="h-4 w-4 animate-spin mr-2" />} Create Smart Bin
                   </Button>
                   <Button variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
                 </div>
