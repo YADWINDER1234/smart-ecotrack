@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Navbar } from "../components/layout/Navbar";
 import RoleSidebar from "../components/RoleSidebar";
 import { Breadcrumb } from "../components/Breadcrumb";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Shield, ShieldCheck, ShieldX, Link2, Hash, Clock } from "lucide-react";
 import { fetchLedger, verifyIntegrity } from "../api/blockchainApi";

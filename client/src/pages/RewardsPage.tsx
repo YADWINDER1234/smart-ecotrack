@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { Navbar } from "../components/layout/Navbar";
 import RoleSidebar from "../components/RoleSidebar";
 import { Breadcrumb } from "../components/Breadcrumb";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Star, Trophy, Gift, ArrowRight, Crown, Medal, Award } from "lucide-react";
+import { Loader2, Star, Trophy, Gift, Crown, Medal, Award } from "lucide-react";
 import { fetchMyRewards, fetchLeaderboard, redeemReward, fetchRedemptions } from "../api/rewardApi";
 import { useAuth } from "../hooks/useAuth";
 

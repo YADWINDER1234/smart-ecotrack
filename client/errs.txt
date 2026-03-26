@@ -1,0 +1,12 @@
+src/pages/BlockchainLedgerPage.tsx(5,29): error TS6133: 'CardHeader' is declared but its value is never read.
+src/pages/BlockchainLedgerPage.tsx(5,41): error TS6133: 'CardTitle' is declared but its value is never read.
+src/pages/BlockchainLedgerPage.tsx(5,52): error TS6133: 'CardDescription' is declared but its value is never read.
+src/pages/RewardsPage.tsx(5,29): error TS6133: 'CardHeader' is declared but its value is never read.
+src/pages/RewardsPage.tsx(5,41): error TS6133: 'CardTitle' is declared but its value is never read.
+src/pages/RewardsPage.tsx(5,52): error TS6133: 'CardDescription' is declared but its value is never read.
+src/pages/RewardsPage.tsx(7,39): error TS6133: 'ArrowRight' is declared but its value is never read.
+src/pages/SmartBinDashboard.tsx(5,52): error TS6133: 'CardDescription' is declared but its value is never read.
+src/pages/SmartBinDashboard.tsx(7,62): error TS6133: 'Gauge' is declared but its value is never read.
+src/pages/SmartBinDashboard.tsx(8,47): error TS6133: 'fetchOverflowPrediction' is declared but its value is never read.
+src/pages/WasteDetectionPage.tsx(7,67): error TS6133: 'Upload' is declared but its value is never read.
+src/pages/WasteDetectionPage.tsx(8,43): error TS6133: 'fetchDisposalGuide' is declared but its value is never read.

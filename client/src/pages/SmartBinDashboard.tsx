@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { Navbar } from "../components/layout/Navbar";
 import RoleSidebar from "../components/RoleSidebar";
 import { Breadcrumb } from "../components/Breadcrumb";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Trash2, Plus, AlertTriangle, CheckCircle2, Gauge, MapPin } from "lucide-react";
-import { fetchBins, fetchBinStats, createBin, fetchOverflowPrediction } from "../api/binApi";
+import { Loader2, Trash2, Plus, AlertTriangle, CheckCircle2, MapPin } from "lucide-react";
+import { fetchBins, fetchBinStats, createBin } from "../api/binApi";
 import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 

@@ -4,8 +4,8 @@ import RoleSidebar from "../components/RoleSidebar";
 import { Breadcrumb } from "../components/Breadcrumb";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Camera, ScanLine, Recycle, AlertTriangle, Info, Upload } from "lucide-react";
-import { classifyWaste, detectFromCamera, fetchDisposalGuide } from "../api/wasteApi";
+import { Loader2, Camera, ScanLine, Recycle, AlertTriangle, Info } from "lucide-react";
+import { classifyWaste, detectFromCamera } from "../api/wasteApi";
 
 const WASTE_TYPE_ICONS: Record<string, string> = {
   PLASTIC: "♻️", METAL: "🔩", GLASS: "🫙", PAPER: "📄",
