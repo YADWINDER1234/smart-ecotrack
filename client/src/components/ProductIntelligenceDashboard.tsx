@@ -15,7 +15,7 @@ import {
   Recycle
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { httpClient, getAccessToken } from "@/api/httpClient";
+import { httpClient } from "@/api/httpClient";
 
 interface DashboardProps {
   data: any;
@@ -75,7 +75,7 @@ export function ProductIntelligenceDashboard({ data, loading }: DashboardProps) 
   // Safe data fallbacks for API responses that may be incomplete
   const management = {
     optimization_suggestions: Array.isArray(intelligence?.management?.optimization_suggestions) 
-      ? intelligence.management.optimization_suggestions.filter(s => typeof s === 'string')
+      ? intelligence.management.optimization_suggestions.filter((s: any) => typeof s === 'string')
       : [
           "Clear cache regularly to improve performance",
           "Disable background apps to enhance battery life",
@@ -87,7 +87,7 @@ export function ProductIntelligenceDashboard({ data, loading }: DashboardProps) 
           "Enable adaptive battery mode for optimal efficiency"
         ],
     maintenance_tips: Array.isArray(intelligence?.management?.maintenance_tips) 
-      ? intelligence.management.maintenance_tips.filter(s => typeof s === 'string')
+      ? intelligence.management.maintenance_tips.filter((s: any) => typeof s === 'string')
       : [
           "Avoid exposing to extreme temperatures",
           "Keep device away from moisture and humidity",
@@ -99,7 +99,7 @@ export function ProductIntelligenceDashboard({ data, loading }: DashboardProps) 
           "Store in cool, dry place when not in use"
         ],
     common_issues: Array.isArray(intelligence?.management?.common_issues) 
-      ? intelligence.management.common_issues.filter(s => typeof s === 'string')
+      ? intelligence.management.common_issues.filter((s: any) => typeof s === 'string')
       : [
           "Battery drains faster than expected",
           "Device overheats during heavy usage",
@@ -116,10 +116,10 @@ export function ProductIntelligenceDashboard({ data, loading }: DashboardProps) 
     eco_score: intelligence?.sustainability?.eco_score ?? 65,
     eco_label: intelligence?.sustainability?.eco_label || "B",
     hazardous_materials: Array.isArray(intelligence?.sustainability?.hazardous_materials)
-      ? intelligence.sustainability.hazardous_materials.filter(m => typeof m === 'string')
+      ? intelligence.sustainability.hazardous_materials.filter((m: any) => typeof m === 'string')
       : [],
     recyclable_parts: Array.isArray(intelligence?.sustainability?.recyclable_parts)
-      ? intelligence.sustainability.recyclable_parts.filter(p => typeof p === 'string')
+      ? intelligence.sustainability.recyclable_parts.filter((p: any) => typeof p === 'string')
       : ["Aluminum frame", "Glass/LCD", "Battery", "Copper wiring", "Circuit boards", "Rare earth metals"],
     carbon_footprint_est: String(intelligence?.sustainability?.carbon_footprint_est || "Medium Impact").substring(0, 100),
     recycling_instructions: String(intelligence?.sustainability?.recycling_instructions || "Check with local e-waste center").substring(0, 250)
@@ -148,7 +148,7 @@ export function ProductIntelligenceDashboard({ data, loading }: DashboardProps) 
       }
       return String(disp || "6.5 inch").substring(0, 100);
     })(),
-    notable_features: Array.isArray(intelligence?.specs?.notable_features) ? intelligence.specs.notable_features.filter(f => typeof f === 'string') : ["Modern", "Connected"]
+    notable_features: Array.isArray(intelligence?.specs?.notable_features) ? intelligence.specs.notable_features.filter((f: any) => typeof f === 'string') : ["Modern", "Connected"]
   };
 
   const market_value = {
