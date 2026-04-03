@@ -15,7 +15,7 @@ export function getAccessToken() {
 
 export const httpClient = axios.create({
   baseURL,
-  timeout: 10_000,
+  timeout: 60_000,
   withCredentials: true // include httpOnly refresh cookie
 });
 

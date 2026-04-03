@@ -14,6 +14,14 @@ const router = Router();
 router.get("/", requireAuth, listProductsHandler);
 router.get("/:id", requireAuth, getProductHandler);
 
+// Public logging for identified products
+router.post(
+  "/",
+  requireAuth,
+  validateBody(createProductSchema),
+  createProductHandler
+);
+
 router.post(
   "/admin",
   requireAuth,

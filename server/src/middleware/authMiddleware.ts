@@ -10,7 +10,13 @@ function parseBearer(authHeader?: string): string | null {
 }
 
 export const requireAuth: RequestHandler = (req, _res, next) => {
-  const token = parseBearer(req.header("authorization"));
+  let token = parseBearer(req.header("authorization"));
+  
+  // Allow token in query params for SSE streams
+  if (!token && req.query.token) {
+    token = req.query.token as string;
+  }
+
   if (!token) return next(new AppError("Missing Authorization header", 401, "AUTH_REQUIRED"));
   const payload = verifyAccessToken(token);
   req.user = { id: payload.sub, role: payload.role };

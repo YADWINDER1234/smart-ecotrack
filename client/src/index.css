@@ -75,3 +75,23 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
+
+@layer utilities {
+  .glass {
+    @apply bg-background/60 backdrop-blur-md border border-white/20 dark:border-white/10;
+  }
+  .glass-card {
+    @apply bg-card/40 backdrop-blur-lg border border-white/10 shadow-xl;
+  }
+  .text-glow {
+    text-shadow: 0 0 10px rgba(var(--primary), 0.5);
+  }
+}
+
+@keyframes scan-line {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(200%); }
+}
+.animate-scan {
+  animation: scan-line 3s linear infinite;
+}

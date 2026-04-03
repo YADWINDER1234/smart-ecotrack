@@ -6,12 +6,14 @@ import {
   generateQrHandler,
   generateQrSchema,
   revokeQrHandler,
-  scanQrHandler
+  scanQrHandler,
+  aiScanHandler
 } from "../controllers/qrController";
 
 const router = Router();
 
 router.post("/scan", optionalAuth, scanQrHandler);
+router.post("/ai-scan", optionalAuth, aiScanHandler);
 
 router.post(
   "/admin/products/:id/qr",

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Sun, Moon, Sprout, Scan, LogOut, LayoutDashboard, UserPlus, LogIn, Menu, X } from "lucide-react";
 
 export function Navbar() {
-  const { user, logout } = useAuth();
+  const { user, accessToken, logout } = useAuth();
   const [dark, setDark] = useState<boolean>(() => {
     const saved = localStorage.getItem("theme");
     if (saved) return saved === "dark";
@@ -49,8 +49,9 @@ export function Navbar() {
   }, [user]);
 
   useEffect(() => {
-    if (!user) return;
-    const es = new EventSource(`${import.meta.env.VITE_API_URL || "http://localhost:4000"}/api/notifications/stream`, { withCredentials: true } as any);
+    if (!user || !accessToken) return;
+    const streamUrl = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/notifications/stream?token=${accessToken}`;
+    const es = new EventSource(streamUrl, { withCredentials: true } as any);
     es.addEventListener("audit", () => {
       try {
         if (user.role === "ADMIN") {
@@ -64,7 +65,7 @@ export function Navbar() {
       // ignore
     });
     return () => es.close();
-  }, [user]);
+  }, [user, accessToken]);
 
   return (
     <>

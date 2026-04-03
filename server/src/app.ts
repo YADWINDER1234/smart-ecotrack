@@ -14,7 +14,8 @@ dotenv.config();
 
 const app = express();
 
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -73,8 +74,14 @@ app.use((req, res) => {
 });
 
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  // Always log the full error so it shows up in Render's logs
-  console.error("[ERROR]", err);
+  // Always log the full error so it shows up in Render's logs or terminal
+  if (err instanceof Error) {
+    console.error(`[ERROR] ${err.name}: ${err.message}`);
+    console.error(err.stack);
+  } else {
+    console.error("[ERROR] Unknown error:", err);
+  }
+
   if (isAppError(err)) {
     return res.status(err.status).json({ error: { code: err.code, message: err.message } });
   }

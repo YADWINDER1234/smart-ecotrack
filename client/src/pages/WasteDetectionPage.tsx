@@ -4,63 +4,96 @@ import RoleSidebar from "../components/RoleSidebar";
 import { Breadcrumb } from "../components/Breadcrumb";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Camera, ScanLine, Recycle, AlertTriangle, Info } from "lucide-react";
+import { Loader2, Camera, ScanLine, Recycle, Zap, Upload } from "lucide-react";
 import { classifyWaste, detectFromCamera } from "../api/wasteApi";
-
-const WASTE_TYPE_ICONS: Record<string, string> = {
-  PLASTIC: "♻️", METAL: "🔩", GLASS: "🫙", PAPER: "📄",
-  ORGANIC: "🍂", EWASTE: "💻", HAZARDOUS: "☢️", GENERAL: "🗑️"
-};
-
-const WASTE_TYPE_COLORS: Record<string, string> = {
-  PLASTIC: "bg-blue-500/10 text-blue-600 border-blue-500/30",
-  METAL: "bg-gray-500/10 text-gray-600 border-gray-500/30",
-  GLASS: "bg-cyan-500/10 text-cyan-600 border-cyan-500/30",
-  PAPER: "bg-amber-500/10 text-amber-600 border-amber-500/30",
-  ORGANIC: "bg-green-500/10 text-green-600 border-green-500/30",
-  EWASTE: "bg-purple-500/10 text-purple-600 border-purple-500/30",
-  HAZARDOUS: "bg-red-500/10 text-red-600 border-red-500/30",
-  GENERAL: "bg-slate-500/10 text-slate-600 border-slate-500/30"
-};
+import { ProductIntelligenceDashboard } from "../components/ProductIntelligenceDashboard";
 
 export function WasteDetectionPage() {
   const [category, setCategory] = useState("");
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
-  const [cameraResult, setCameraResult] = useState<any>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64String = reader.result?.toString().split(",")[1];
+      if (base64String) {
+        setLoading(true);
+        setResult(null);
+        try {
+          const data = await detectFromCamera(base64String);
+          setResult(data);
+        } catch (err) {
+          console.error(err);
+        } finally {
+          setLoading(false);
+          if (fileInputRef.current) fileInputRef.current.value = "";
+        }
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   async function handleClassify() {
     if (!category.trim()) return;
     setLoading(true);
     setResult(null);
     try {
-      const data = await classifyWaste(category);
+      const data = await classifyWaste(category, {});
       setResult(data);
     } catch (err) { console.error(err); } finally { setLoading(false); }
   }
 
+  const [stream, setStream] = useState<MediaStream | null>(null);
+
   const startCamera = useCallback(async () => {
+    setCameraActive(true);
+    setStream(null); // Reset
+    
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
-      setCameraActive(true);
+      // Try environment first
+      const s = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: "environment" } 
+      });
+      setStream(s);
     } catch (err) {
-      console.error("Camera access denied:", err);
-      alert("Camera access denied. Please allow camera permissions.");
+      console.error("Camera environment access error:", err);
+      try {
+        // Fallback to any camera
+        const fallbackS = await navigator.mediaDevices.getUserMedia({ video: true });
+        setStream(fallbackS);
+      } catch (fallbackErr) {
+        console.error("All camera access denied:", fallbackErr);
+        setCameraActive(false);
+        alert("Camera access denied. Please ensure you have a camera and have granted browser permissions.");
+      }
     }
   }, []);
 
+  // Attach stream to video element whenever both are available
+  useEffect(() => {
+    if (stream && videoRef.current) {
+      console.log("Attaching stream to video element...");
+      videoRef.current.srcObject = stream;
+      videoRef.current.onloadedmetadata = () => {
+        videoRef.current?.play().catch(e => console.error("Play error:", e));
+      };
+    }
+  }, [stream]);
+
   function stopCamera() {
-    streamRef.current?.getTracks().forEach(t => t.stop());
-    streamRef.current = null;
+    stream?.getTracks().forEach(t => t.stop());
+    setStream(null);
     setCameraActive(false);
   }
+
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
 
   async function captureAndDetect() {
     if (!videoRef.current) return;
@@ -68,72 +101,32 @@ export function WasteDetectionPage() {
     canvas.width = videoRef.current.videoWidth;
     canvas.height = videoRef.current.videoHeight;
     canvas.getContext("2d")?.drawImage(videoRef.current, 0, 0);
-    const base64 = canvas.toDataURL("image/jpeg", 0.8).split(",")[1];
+    const fullBase64 = canvas.toDataURL("image/jpeg", 0.8);
+    const base64Data = fullBase64.split(",")[1];
+    
+    setCapturedImage(fullBase64);
     setLoading(true);
-    setCameraResult(null);
+    setResult(null);
+    
+    // Stop camera immediately to "freeze" the frame
+    stopCamera();
+
     try {
-      const data = await detectFromCamera(base64);
-      setCameraResult(data);
-      stopCamera();
-    } catch (err) { console.error(err); } finally { setLoading(false); }
+      const data = await detectFromCamera(base64Data);
+      setResult(data);
+    } catch (err) { 
+      console.error(err); 
+      setCapturedImage(null); // Reset if failed so user can try again
+    } finally { 
+      setLoading(false); 
+    }
   }
 
   useEffect(() => {
-    return () => { stopCamera(); };
-  }, []);
-
-  function ResultCard({ data, title }: { data: any; title: string }) {
-    if (!data) return null;
-    const colorClass = WASTE_TYPE_COLORS[data.wasteType] || WASTE_TYPE_COLORS.GENERAL;
-    return (
-      <Card className="border-none shadow-md animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg">{title}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-4">
-            <div className={`text-4xl p-3 rounded-xl border ${colorClass}`}>
-              {WASTE_TYPE_ICONS[data.wasteType] || "🗑️"}
-            </div>
-            <div>
-              <h3 className="text-xl font-bold">{data.wasteType}</h3>
-              <div className="flex items-center gap-2 mt-1">
-                <div className="h-2 flex-1 bg-muted rounded-full overflow-hidden max-w-[120px]">
-                  <div className="h-full bg-primary rounded-full transition-all duration-700"
-                    style={{ width: `${(data.confidence * 100)}%` }} />
-                </div>
-                <span className="text-sm font-medium text-muted-foreground">{(data.confidence * 100).toFixed(0)}% confidence</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-lg bg-muted/50 p-4 border border-border/50">
-            <div className="flex items-start gap-2">
-              <Info className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-              <div>
-                <p className="font-medium text-sm mb-1">Target Bin: <span className="text-primary">{data.targetBin || data.disposal?.targetBin}</span></p>
-                <p className="text-sm text-muted-foreground leading-relaxed">{data.disposal?.instructions}</p>
-              </div>
-            </div>
-          </div>
-
-          {data.disposal?.isHazardous && (
-            <div className="flex items-center gap-2 bg-red-500/10 text-red-600 dark:text-red-400 p-3 rounded-lg border border-red-500/20">
-              <AlertTriangle className="h-5 w-5" />
-              <span className="text-sm font-bold">Hazardous Material — Special handling required!</span>
-            </div>
-          )}
-
-          {data.disposal?.rewardMultiplier > 1 && (
-            <div className="flex items-center gap-2 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 p-3 rounded-lg border border-yellow-500/20">
-              <span className="text-lg">⭐</span>
-              <span className="text-sm font-bold">{data.disposal.rewardMultiplier}x Reward Multiplier!</span>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    );
-  }
+    return () => { 
+      stream?.getTracks().forEach(t => t.stop());
+    };
+  }, [stream]);
 
   return (
     <div className="min-h-screen bg-muted/20 pb-12">
@@ -142,76 +135,162 @@ export function WasteDetectionPage() {
         <RoleSidebar />
         <div className="flex-1 space-y-6">
           <Breadcrumb />
-          <div className="flex items-center gap-2 mt-2">
-            <div className="h-10 w-10 rounded-xl bg-cyan-500/10 flex items-center justify-center">
-              <ScanLine className="h-6 w-6 text-cyan-500" />
+          <div className="flex items-center justify-between mt-2">
+            <div className="flex items-center gap-2">
+              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Zap className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-extrabold tracking-tight">AI Product Hub</h1>
+                <p className="text-sm text-muted-foreground font-medium">Universal Intelligence & Lifecycle Command</p>
+              </div>
             </div>
-            <h1 className="text-3xl font-bold tracking-tight">Waste Detection</h1>
+            
+            <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 text-xs font-bold uppercase tracking-widest">
+              <Zap className="h-3.5 w-3.5" />
+              Gemma 3 27B High-Performance
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Text Classification */}
+            {/* Camera Detection */}
+            <Card className="border-none shadow-sm overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
+              <CardHeader className="relative z-10">
+                <CardTitle className="text-lg flex items-center gap-2"><Camera className="h-5 w-5 text-primary" /> AI Vision Scan</CardTitle>
+                <CardDescription>Snap a photo to identify any product architecture</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4 relative z-10">
+                {cameraActive || capturedImage ? (
+                  <div className="space-y-3">
+                    <div className="relative rounded-2xl overflow-hidden border-2 border-primary/20 bg-black aspect-video group-hover:border-primary/40 transition-all">
+                      {capturedImage ? (
+                        <img src={capturedImage} className="w-full h-full object-cover" alt="Captured product" />
+                      ) : (
+                        <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+                      )}
+                      
+                      {loading && (
+                        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center">
+                          <div className="flex flex-col items-center gap-4">
+                            <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                            <p className="text-white font-bold text-sm">Synthesizing Product Data...</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {!loading && !capturedImage && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="w-48 h-48 border-2 border-dashed border-primary/30 rounded-2xl animate-pulse" />
+                          <div className="absolute top-0 w-full h-1 bg-primary/30 animate-scan" />
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      {!capturedImage ? (
+                        <>
+                          <Button onClick={captureAndDetect} disabled={loading} className="flex-1 h-12 text-base shadow-lg shadow-primary/20">
+                            {loading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Camera className="h-5 w-5 mr-2" />}
+                            Capture & Analyze
+                          </Button>
+                          <Button variant="outline" onClick={stopCamera} className="h-12 px-6">Cancel</Button>
+                        </>
+                      ) : (
+                        <Button 
+                          variant="outline" 
+                          onClick={() => { setCapturedImage(null); startCamera(); }} 
+                          disabled={loading} 
+                          className="w-full h-12"
+                        >
+                          Retake Photo
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-3">
+                    <Button onClick={startCamera} variant="outline" className="w-full h-32 flex flex-col gap-2 border-dashed border-2 rounded-2xl bg-primary/5 border-primary/20 hover:bg-primary/10 transition-all">
+                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Camera className="h-6 w-6 text-primary" />
+                      </div>
+                      <div className="text-center">
+                        <span className="block text-sm font-bold text-foreground">Launch Intelligence Vision</span>
+                        <span className="text-xs text-muted-foreground mt-1">Identify specs, health & sustainability</span>
+                      </div>
+                    </Button>
+                    <div className="relative">
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        ref={fileInputRef}
+                        onChange={handleFileUpload} 
+                      />
+                      <Button 
+                        onClick={() => fileInputRef.current?.click()} 
+                        disabled={loading}
+                        variant="outline" 
+                        className="w-full h-14 border-dashed border-2 rounded-xl bg-muted/30 border-muted-foreground/30 hover:bg-muted/50 transition-all"
+                      >
+                        {loading && !cameraActive ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : (
+                          <Upload className="h-4 w-4 mr-2 text-muted-foreground" />
+                        )}
+                        <span className="text-sm font-medium text-foreground">Upload Picture</span>
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Text Search */}
             <Card className="border-none shadow-sm">
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2"><Recycle className="h-5 w-5" /> Classify by Category</CardTitle>
-                <CardDescription>Enter a product category to identify waste type</CardDescription>
+                <CardTitle className="text-lg flex items-center gap-2"><Recycle className="h-5 w-5 text-primary" /> Manual Identity Look-up</CardTitle>
+                <CardDescription>Enter product name or code for deep analysis</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 pt-2">
                 <div className="flex gap-2">
-                  <input id="waste-category" placeholder="e.g. electronics, plastic bottle, battery..."
+                  <input id="waste-category" placeholder="e.g. iPhone 15 Pro, Dell XPS 13..."
                     value={category} onChange={e => setCategory(e.target.value)}
                     onKeyDown={e => e.key === "Enter" && handleClassify()}
-                    className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm" />
-                  <Button onClick={handleClassify} disabled={loading || !category.trim()}>
-                    {loading && !cameraActive ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ScanLine className="h-4 w-4 mr-2" />}
-                    Classify
+                    className="flex-1 rounded-xl border border-input bg-background/50 px-4 py-2 text-sm focus:ring-2 focus:ring-primary/20 transition-all" />
+                  <Button onClick={handleClassify} disabled={loading || !category.trim()} className="h-10 px-6">
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Zap className="h-4 w-4 mr-2" />}
+                    Analyze
                   </Button>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {["electronics", "plastic", "glass", "battery", "paper", "food", "metal"].map(c => (
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {["Smartphones", "Laptops", "Home Cooling", "Battery Packs", "Old Electronics"].map(c => (
                     <button key={c} onClick={() => { setCategory(c); }}
-                      className="px-3 py-1 rounded-full bg-muted/50 text-xs font-medium hover:bg-muted transition-colors">
+                      className="px-3 py-1.5 rounded-lg bg-muted text-[10px] font-bold uppercase tracking-wider hover:bg-primary hover:text-white transition-all">
                       {c}
                     </button>
                   ))}
                 </div>
               </CardContent>
             </Card>
-
-            {/* Camera Detection */}
-            <Card className="border-none shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2"><Camera className="h-5 w-5" /> AI Camera Detection</CardTitle>
-                <CardDescription>Take a photo for AI-powered waste classification</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {cameraActive ? (
-                  <div className="space-y-3">
-                    <div className="relative rounded-lg overflow-hidden border border-border bg-black">
-                      <video ref={videoRef} autoPlay playsInline muted className="w-full h-48 object-cover" />
-                      <div className="absolute inset-0 border-2 border-dashed border-primary/30 m-4 rounded-lg pointer-events-none" />
-                    </div>
-                    <div className="flex gap-2">
-                      <Button onClick={captureAndDetect} disabled={loading} className="flex-1">
-                        {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Camera className="h-4 w-4 mr-2" />}
-                        Capture & Detect
-                      </Button>
-                      <Button variant="outline" onClick={stopCamera}>Cancel</Button>
-                    </div>
-                  </div>
-                ) : (
-                  <Button onClick={startCamera} variant="outline" className="w-full h-32 flex flex-col gap-2 border-dashed border-2">
-                    <Camera className="h-8 w-8 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Click to open camera</span>
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
           </div>
 
-          {/* Results */}
-          {result && <ResultCard data={result} title="Classification Result" />}
-          {cameraResult && <ResultCard data={cameraResult} title="AI Detection Result" />}
+          {/* New Dashboard Results */}
+          {(loading || result) && (
+            <ProductIntelligenceDashboard data={result} loading={loading} />
+          )}
+
+          {!result && !loading && (
+            <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 border border-dashed border-border rounded-3xl bg-muted/5">
+              <div className="h-16 w-16 rounded-full bg-muted/20 flex items-center justify-center">
+                <ScanLine className="h-8 w-8 text-muted-foreground/40" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-muted-foreground">Ready for Intelligence Scan</h3>
+                <p className="text-sm text-muted-foreground/60 max-w-xs mx-auto">Use the camera or search above to retrieve real-time product specs and management insights.</p>
+              </div>
+            </div>
+          )}
         </div>
       </main>
     </div>

@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Shield, Package, AlertCircle, FileText, CalendarCheck, Trash2, Trophy, ScanLine, Route, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, Shield, Package, AlertCircle, FileText, CalendarCheck, Trash2, Trophy, Zap, Route, ShieldCheck } from "lucide-react";
 
 export function RoleSidebar({ className, mobile }: { className?: string; mobile?: boolean }) {
   const { user, displayUser } = useAuth();
@@ -30,6 +30,12 @@ export function RoleSidebar({ className, mobile }: { className?: string; mobile?
           </li>
 
           {/* Shared links for all roles */}
+          <li>
+            <NavLink to="/waste-detection" onClick={() => window.dispatchEvent(new Event("close-drawer"))} className={getLinkClass}>
+              <Zap className="h-4 w-4" />
+              <span>AI Product Hub</span>
+            </NavLink>
+          </li>
           <li>
             <NavLink to="/rewards" onClick={() => window.dispatchEvent(new Event("close-drawer"))} className={getLinkClass}>
               <Trophy className="h-4 w-4" />
@@ -126,12 +132,7 @@ export function RoleSidebar({ className, mobile }: { className?: string; mobile?
 
           {viewedRole === "CONSUMER" && (
             <>
-              <li>
-                <NavLink to="/waste-detection" onClick={() => window.dispatchEvent(new Event("close-drawer"))} className={getLinkClass}>
-                  <ScanLine className="h-4 w-4" />
-                  <span>Waste Detection</span>
-                </NavLink>
-              </li>
+              {/* Consumer specific links can go here in the future */}
             </>
           )}
         </ul>

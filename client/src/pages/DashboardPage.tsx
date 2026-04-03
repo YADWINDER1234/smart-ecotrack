@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Loader2, AlertCircle, Star } from "lucide-react";
 
 export function DashboardPage() {
-  const { user } = useAuth();
+  const { user, accessToken } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<any>(null);
@@ -93,7 +93,7 @@ export function DashboardPage() {
 
     // subscribe to realtime updates so charts are automatic
     const apiUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
-    const es = new EventSource(`${apiUrl}/api/notifications/stream`, { withCredentials: true } as any);
+    const es = new EventSource(`${apiUrl}/api/notifications/stream?token=${accessToken}`, { withCredentials: true } as any);
     es.addEventListener("qr_state_change", () => {
       if (!cancelled) {
         void load();

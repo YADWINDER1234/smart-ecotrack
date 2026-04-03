@@ -5,11 +5,12 @@ import { httpClient } from "../api/httpClient";
 import { useAuth } from "../hooks/useAuth";
 import * as recyclingApi from "../api/recyclingApi";
 import { QRScanner } from "../components/QRScanner";
+import { ProductIntelligenceDashboard } from "../components/ProductIntelligenceDashboard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, AlertCircle, QrCode, Search, CheckCircle2, Factory, Leaf, BatteryWarning } from "lucide-react";
+import { Loader2, AlertCircle, QrCode, Search, CheckCircle2, Factory, Leaf, BatteryWarning, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function QRScanResultPage() {
@@ -18,8 +19,10 @@ export function QRScanResultPage() {
   const { user } = useAuth();
 
   const [loading, setLoading] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<any>(null);
+  const [aiResult, setAiResult] = useState<any>(null);
   const [intentNotes, setIntentNotes] = useState("");
   const [intentMsg, setIntentMsg] = useState<string | null>(null);
   const [isSuccessMsg, setIsSuccessMsg] = useState(false);
@@ -61,8 +64,24 @@ export function QRScanResultPage() {
       setResult(data);
     } catch (err: any) {
       setError(err?.response?.data?.error?.message ?? "Scan failed");
+      // If native scan fails, it might be a regular product barcode/name
+      setResult(null);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAiDeepScan = async () => {
+    setAiLoading(true);
+    setError(null);
+    setAiResult(null);
+    try {
+      const { data } = await httpClient.post("/qr/ai-scan", { token });
+      setAiResult(data);
+    } catch (err: any) {
+      setError(err?.response?.data?.error?.message ?? "AI Analysis failed");
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -116,23 +135,43 @@ export function QRScanResultPage() {
                 </div>
               </div>
 
-              <Button
-                className="w-full h-12 text-base"
-                disabled={loading || !canScan}
-                onClick={handleManualScan}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Scanning token...
-                  </>
-                ) : (
-                  <>
-                    <Search className="mr-2 h-5 w-5" />
-                    Verify Product
-                  </>
-                )}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  className="flex-1 h-12 text-base"
+                  disabled={loading || aiLoading || !token}
+                  onClick={handleManualScan}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Verifying...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="mr-2 h-5 w-5" />
+                      Verify QR
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="secondary"
+                  className="flex-1 h-12 text-base bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border-emerald-500/20"
+                  disabled={loading || aiLoading || !token}
+                  onClick={handleAiDeepScan}
+                >
+                  {aiLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      AI Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="mr-2 h-5 w-5" />
+                      AI Deep Scan
+                    </>
+                  )}
+                </Button>
+              </div>
 
               {!token && (
                 <div className="pt-6 mt-6 border-t border-border">
@@ -147,7 +186,8 @@ export function QRScanResultPage() {
                             params.set("token", t);
                             setParams(params, { replace: true });
                           } else {
-                            setError("QR code does not contain a valid token parameter");
+                            params.set("token", decoded);
+                            setParams(params, { replace: true });
                           }
                         } catch {
                           params.set("token", decoded);
@@ -162,10 +202,22 @@ export function QRScanResultPage() {
           </Card>
 
           {error && (
-            <div className="flex items-center gap-3 rounded-lg bg-destructive/15 p-4 text-sm text-destructive shadow-sm max-w-xl mx-auto">
-              <AlertCircle className="h-5 w-5 shrink-0" />
-              <span className="font-medium">{error}</span>
+            <div className="flex flex-col gap-4 rounded-lg bg-destructive/15 p-6 text-sm text-destructive shadow-sm max-w-xl mx-auto border border-destructive/20">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="h-5 w-5 shrink-0" />
+                <span className="font-bold text-base">{error}</span>
+              </div>
+              <p className="text-destructive/80">This doesn't look like a standard system token. Try an <strong>AI Deep Scan</strong> to identify this product instead.</p>
+              <Button variant="destructive" className="w-full" onClick={handleAiDeepScan} disabled={aiLoading}>
+                {aiLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Zap className="h-4 w-4 mr-2" />}
+                Run AI Intelligence Scan
+              </Button>
             </div>
+          )}
+
+          {/* AI Intelligence View */}
+          {(aiLoading || aiResult) && (
+            <ProductIntelligenceDashboard data={aiResult} loading={aiLoading} />
           )}
 
           {result && (result.product?.category === "Electronics" || result.product?.category === "Batteries") && (

@@ -15,6 +15,7 @@ import {
 import { safeEqualHex } from "../utils/crypto";
 import { computeEcoScore } from "../services/ecoScoreService";
 import { audit } from "../services/auditService";
+import { getFullProductIntelligence } from "../services/productIntelligenceService";
 
 export const generateQrSchema = z.object({
   daysValid: z.number().int().min(1).max(3650).optional()
@@ -167,6 +168,17 @@ export const scanQrHandler: RequestHandler = async (req, res, next) => {
       product,
       eco
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const aiScanHandler: RequestHandler = async (req, res, next) => {
+  try {
+    const { token } = scanSchema.parse(req.body);
+    // If token is just a string (not a JWT), process it as a product name/barcode
+    const intelligence = await getFullProductIntelligence(token, false);
+    res.json(intelligence);
   } catch (err) {
     next(err);
   }

@@ -65,7 +65,7 @@ export function AdminDashboard() {
 
     // realtime update
     const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
-    const es = new EventSource(`${baseUrl}/api/notifications/stream`, { withCredentials: true } as any);
+    const es = new EventSource(`${baseUrl}/api/notifications/stream?token=${getAccessToken()}`, { withCredentials: true } as any);
     es.addEventListener("qr_state_change", () => {
       void loadMetrics();
     });
