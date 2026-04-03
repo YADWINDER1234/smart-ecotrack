@@ -20,10 +20,10 @@ export function LoginPage() {
   const [copiedCredential, setCopiedCredential] = useState<string | null>(null);
 
   const testCredentials = [
-    { role: "Admin", email: "admin@smartecotrack.com", password: "Admin@123" },
-    { role: "Manufacturer", email: "mfg@smartecotrack.com", password: "Mfg@123" },
-    { role: "Recycler", email: "recycler@smartecotrack.com", password: "Recycler@123" },
-    { role: "Consumer", email: "user@smartecotrack.com", password: "User@123" },
+    { role: "Admin", email: "admin@ecotrack.dev", password: "Admin@1234!" },
+    { role: "Manufacturer", email: "manufacturer@ecotrack.dev", password: "Manufacturer@1234!" },
+    { role: "Recycler", email: "recycler@ecotrack.dev", password: "Recycler@1234!" },
+    { role: "Consumer", email: "consumer@ecotrack.dev", password: "Consumer@1234!" },
   ];
 
   const copyToClipboard = (text: string, credName: string) => {
