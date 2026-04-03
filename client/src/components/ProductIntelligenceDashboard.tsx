@@ -155,16 +155,16 @@ export function ProductIntelligenceDashboard({ data, loading }: DashboardProps) 
     original_price_est: (() => {
       const price = intelligence?.market_value?.original_price_est;
       if (typeof price === 'object' && price !== null) {
-        return Object.values(price).filter(v => typeof v === 'string').join(", ") || "$500-800";
+        return Object.values(price).filter(v => typeof v === 'string').join(", ") || "₹41,500-66,400";
       }
-      return String(price || "$500-800").substring(0, 100);
+      return String(price || "₹41,500-66,400").substring(0, 100);
     })(),
     current_resale_est: (() => {
       const resale = intelligence?.market_value?.current_resale_est;
       if (typeof resale === 'object' && resale !== null) {
-        return Object.values(resale).filter(v => typeof v === 'string').join(", ") || "$200-400";
+        return Object.values(resale).filter(v => typeof v === 'string').join(", ") || "₹16,600-33,200";
       }
-      return String(resale || "$200-400").substring(0, 100);
+      return String(resale || "₹16,600-33,200").substring(0, 100);
     })(),
     trade_in_recommendation: (() => {
       const trade = intelligence?.market_value?.trade_in_recommendation;

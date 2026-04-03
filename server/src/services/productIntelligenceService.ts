@@ -36,6 +36,68 @@ export interface ProductIntelligenceResult {
 }
 
 /**
+ * Validate and correct unrealistic market prices based on device age and category
+ */
+function validateMarketValues(intelligence: any): any {
+  const releaseYear = parseInt(intelligence.identity?.release_year) || new Date().getFullYear();
+  const currentYear = 2026;
+  const deviceAge = currentYear - releaseYear;
+  
+  // Extract numeric values from prices (e.g., "$500-800" -> 500-800, "Rs 50000" -> 50000)
+  const extractPriceRange = (priceStr: string): { min: number; max: number; currency: string } | null => {
+    const currencyMatch = priceStr?.match(/[\$€£₹]/);
+    const currency = currencyMatch ? currencyMatch[0] : "$";
+    const numMatch = priceStr?.match(/[\d,]+/g);
+    if (numMatch && numMatch.length >= 1) {
+      const nums = numMatch.map(n => parseInt(n.replace(/,/g, "")));
+      return nums.length === 2 
+        ? { min: nums[0], max: nums[1], currency }
+        : nums.length === 1
+        ? { min: nums[0], max: nums[0] * 1.2, currency }
+        : null;
+    }
+    return null;
+  };
+
+  const original = extractPriceRange(intelligence.market_value?.original_price_est);
+  const resale = extractPriceRange(intelligence.market_value?.current_resale_est);
+
+  // Validation rules: Flag unrealistic prices
+  const isUnrealistic = () => {
+    if (!original) return false;
+    
+    // Very old devices (>15 years) shouldn't have high original prices unless flagship
+    if (deviceAge > 15 && original.max > 300 && !intelligence.identity?.name?.toLowerCase().includes("flagship")) {
+      return true;
+    }
+    
+    // Recent budget devices shouldn't be priced at flagship levels
+    if (deviceAge < 5 && intelligence.identity?.category?.toLowerCase().includes("feature") && original.max > 500) {
+      return true;
+    }
+    
+    // Resale should be much lower than original for old devices
+    if (deviceAge > 10 && resale && resale.max > original.max * 0.3) {
+      return true;
+    }
+    
+    return false;
+  };
+
+  // If prices seem unrealistic, log warning (but don't auto-correct for now, just note it)
+  if (isUnrealistic()) {
+    console.warn(`⚠️ Unrealistic market value detected for "${intelligence.identity?.name}" (${releaseYear}):`, {
+      original: intelligence.market_value?.original_price_est,
+      resale: intelligence.market_value?.current_resale_est,
+      deviceAge: `${deviceAge} years`,
+      recommend: "Please verify with actual market research"
+    });
+  }
+
+  return intelligence;
+}
+
+/**
  * Main service to combine AI identification, logic, and existing waste rules
  */
 export async function getFullProductIntelligence(
@@ -46,7 +108,10 @@ export async function getFullProductIntelligence(
   const productTitle = await identifyProduct(input, isImage);
   
   // 2. Get deep intelligence
-  const intelligence = await getProductIntelligence(productTitle);
+  let intelligence = await getProductIntelligence(productTitle);
+  
+  // 3. Validate market values
+  intelligence = validateMarketValues(intelligence);
   
   // Ensure hazardous_materials is an array with fallback
   const hazardousMaterials = Array.isArray(intelligence.sustainability?.hazardous_materials) 
@@ -64,7 +129,7 @@ export async function getFullProductIntelligence(
     ecoScore = 75; // Default eco score
   }
   
-  // 3. Enrich with local waste rules for consistency
+  // 4. Enrich with local waste rules for consistency
   const wasteResult = classifyWasteType(intelligence.identity.name, {
     wasteType: intelligence.identity.category?.toUpperCase().includes("ELECTRONIC") ? "EWASTE" : undefined,
     hazardSafety: hazardousMaterials.length > 0 ? 0.2 : 0.8

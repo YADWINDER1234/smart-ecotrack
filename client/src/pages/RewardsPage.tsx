@@ -10,8 +10,8 @@ import { useAuth } from "../hooks/useAuth";
 
 const REWARD_OPTIONS = [
   { type: "DISCOUNT_CODE", label: "10% Discount Code", points: 100, icon: "🏷️", desc: "Get 10% off eco-friendly products" },
-  { type: "ECO_CREDIT", label: "Eco Credit ($5)", points: 200, icon: "🌱", desc: "Apply $5 credit to your account" },
-  { type: "GIFT_CARD", label: "Gift Card ($10)", points: 500, icon: "🎁", desc: "Redeemable at partner stores" },
+  { type: "ECO_CREDIT", label: "Eco Credit (₹415)", points: 200, icon: "🌱", desc: "Apply ₹415 credit to your account" },
+  { type: "GIFT_CARD", label: "Gift Card (₹830)", points: 500, icon: "🎁", desc: "Redeemable at partner stores" },
   { type: "TREE_PLANT", label: "Plant a Tree", points: 300, icon: "🌳", desc: "We plant a tree in your name" }
 ];
 

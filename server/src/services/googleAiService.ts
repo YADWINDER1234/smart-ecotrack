@@ -59,10 +59,30 @@ export async function identifyProduct(input: string, isImage: boolean = false): 
 
 export async function getProductIntelligence(productName: string): Promise<any> {
   const prompt = `
-    Technical JSON report for: "${productName}". 
-    EXACT keys: identity(name, brand, category, release_year), specs(cpu, memory, battery, display, notable_features), management(tips, issues, advice), sustainability(eco_score, eco_label, materials, carbon, recycling), market_value(original, current, trade_in).
+    Generate a comprehensive technical and market intelligence JSON report for: "${productName}".
     
-    IMPORTANT: Provide REAL data for ${productName}. NO placeholders.
+    REQUIRED EXACT JSON STRUCTURE:
+    {
+      "identity": {"name": "...", "brand": "...", "category": "...", "release_year": "..."},
+      "specs": {"cpu": "...", "memory": "...", "battery": "...", "display": "...", "notable_features": [...]},
+      "management": {"maintenance_tips": [...], "common_issues": [...], "optimization_suggestions": [...]},
+      "sustainability": {"eco_score": <number 0-100>, "eco_label": "...", "hazardous_materials": [...], "carbon_footprint_est": "...", "recycling_instructions": "..."},
+      "market_value": {
+        "original_price_est": "Estimated original launch price in USD (e.g., '$299-399' or 'Rs 25,000-30,000')",
+        "current_resale_est": "Current realistic second-hand/resale market value (check eBay, OLX, marketplace prices)",
+        "trade_in_recommendation": "Trade-in value assessment and condition notes"
+      }
+    }
+    
+    MARKET VALUE CRITICAL RULES:
+    - Use REAL market research (eBay sold listings, OLX, local market values)
+    - For vintage/old devices: Research actual selling prices, not theoretical prices
+    - For Nokia 1100 (2003): Original ~$100-150, Current resale $10-50 (NOT $500+)
+    - Match original_price_est to device age/specs (budget phones $150-300, flagship $800-1200, entry-level $200-400)
+    - current_resale_est should be 20-40% of original for recent devices, 5-15% for old devices
+    - Include currency and price range (e.g., "$199-299", "Rs 15,000-25,000")
+    
+    DO NOT use generic fallback prices. Research the actual market value for "${productName}".
   `;
 
   for (const modelName of MODELS_BY_PRIORITY) {
