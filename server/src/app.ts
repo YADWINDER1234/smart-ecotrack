@@ -45,6 +45,15 @@ app.use(helmet());
 app.use(morgan("dev"));
 app.use(cookieParser());
 
+// Root health check route
+app.get("/", (req, res) => {
+  res.json({ 
+    status: "API is working 🚀",
+    service: "Smart EcoTrack API",
+    version: "1.0.0"
+  });
+});
+
 const scanLimiter = rateLimit({
   windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 60_000),
   max: Number(process.env.RATE_LIMIT_MAX || 60),
