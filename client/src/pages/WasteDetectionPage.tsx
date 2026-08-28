@@ -22,9 +22,31 @@ export function WasteDetectionPage() {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onloadend = async () => {
-      const base64String = reader.result?.toString().split(",")[1];
-      if (base64String) {
+    reader.onloadend = () => {
+      const img = new Image();
+      img.onload = async () => {
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 800;
+        const MAX_HEIGHT = 600;
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > MAX_WIDTH) {
+          height = Math.round((height * MAX_WIDTH) / width);
+          width = MAX_WIDTH;
+        }
+        if (height > MAX_HEIGHT) {
+          width = Math.round((width * MAX_HEIGHT) / height);
+          height = MAX_HEIGHT;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d")?.drawImage(img, 0, 0, width, height);
+        
+        const fullBase64 = canvas.toDataURL("image/jpeg", 0.7);
+        const base64String = fullBase64.split(",")[1];
+        
         setLoading(true);
         setResult(null);
         setError(null);
@@ -38,7 +60,8 @@ export function WasteDetectionPage() {
           setLoading(false);
           if (fileInputRef.current) fileInputRef.current.value = "";
         }
-      }
+      };
+      img.src = reader.result as string;
     };
     reader.readAsDataURL(file);
   };
@@ -107,10 +130,25 @@ export function WasteDetectionPage() {
   async function captureAndDetect() {
     if (!videoRef.current) return;
     const canvas = document.createElement("canvas");
-    canvas.width = videoRef.current.videoWidth;
-    canvas.height = videoRef.current.videoHeight;
-    canvas.getContext("2d")?.drawImage(videoRef.current, 0, 0);
-    const fullBase64 = canvas.toDataURL("image/jpeg", 0.8);
+    
+    const MAX_WIDTH = 800;
+    const MAX_HEIGHT = 600;
+    let width = videoRef.current.videoWidth;
+    let height = videoRef.current.videoHeight;
+    
+    if (width > MAX_WIDTH) {
+      height = Math.round((height * MAX_WIDTH) / width);
+      width = MAX_WIDTH;
+    }
+    if (height > MAX_HEIGHT) {
+      width = Math.round((width * MAX_HEIGHT) / height);
+      height = MAX_HEIGHT;
+    }
+    
+    canvas.width = width;
+    canvas.height = height;
+    canvas.getContext("2d")?.drawImage(videoRef.current, 0, 0, width, height);
+    const fullBase64 = canvas.toDataURL("image/jpeg", 0.7);
     const base64Data = fullBase64.split(",")[1];
     
     setCapturedImage(fullBase64);

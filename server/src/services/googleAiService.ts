@@ -32,7 +32,7 @@ export async function identifyProduct(input: string, isImage: boolean = false): 
   for (const modelName of MODELS_BY_PRIORITY) {
     try {
       console.log(`📡 [HUB] IDENTIFY: Using ${modelName}...`);
-      const model = getGenAI().getGenerativeModel({ model: modelName });
+      const model = getGenAI().getGenerativeModel({ model: modelName }, { timeout: 15000 });
       
       const prompt = isImage 
         ? "Identify Brand and Model. Return ONLY the identification title."
@@ -86,7 +86,7 @@ export async function getProductIntelligence(productName: string): Promise<any> 
   for (const modelName of MODELS_BY_PRIORITY) {
     try {
       console.log(`🌐 [HUB] INTEL: Fetching for "${productName}" using ${modelName}...`);
-      const model = getGenAI().getGenerativeModel({ model: modelName });
+      const model = getGenAI().getGenerativeModel({ model: modelName }, { timeout: 15000 });
       const result = await model.generateContent(prompt);
       const rawText = result.response.text();
       
