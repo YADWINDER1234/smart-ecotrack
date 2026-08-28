@@ -22,11 +22,9 @@ function getGenAI() {
   if (!key) throw new Error("GEMINI_API_KEY is missing in env!");
   return new GoogleGenerativeAI(key);
 }
-
 const MODELS_BY_PRIORITY = [
+  "gemini-3.6-flash",
   "gemini-2.5-flash",
-  "gemini-3.1-flash",
-  "gemini-2.0-flash",
   "gemma-3-27b-it"
 ];
 

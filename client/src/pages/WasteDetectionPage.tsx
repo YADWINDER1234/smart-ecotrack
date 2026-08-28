@@ -13,6 +13,7 @@ export function WasteDetectionPage() {
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -26,11 +27,13 @@ export function WasteDetectionPage() {
       if (base64String) {
         setLoading(true);
         setResult(null);
+        setError(null);
         try {
           const data = await detectFromCamera(base64String);
           setResult(data);
-        } catch (err) {
+        } catch (err: any) {
           console.error(err);
+          setError(err?.response?.data?.error?.message || err?.message || "AI detection failed. Please try again.");
         } finally {
           setLoading(false);
           if (fileInputRef.current) fileInputRef.current.value = "";
@@ -44,10 +47,16 @@ export function WasteDetectionPage() {
     if (!category.trim()) return;
     setLoading(true);
     setResult(null);
+    setError(null);
     try {
       const data = await classifyWaste(category, {});
       setResult(data);
-    } catch (err) { console.error(err); } finally { setLoading(false); }
+    } catch (err: any) { 
+      console.error(err); 
+      setError(err?.response?.data?.error?.message || err?.message || "Classification failed. Please try again.");
+    } finally { 
+      setLoading(false); 
+    }
   }
 
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -107,6 +116,7 @@ export function WasteDetectionPage() {
     setCapturedImage(fullBase64);
     setLoading(true);
     setResult(null);
+    setError(null);
     
     // Stop camera immediately to "freeze" the frame
     stopCamera();
@@ -114,9 +124,9 @@ export function WasteDetectionPage() {
     try {
       const data = await detectFromCamera(base64Data);
       setResult(data);
-    } catch (err) { 
+    } catch (err: any) { 
       console.error(err); 
-      setCapturedImage(null); // Reset if failed so user can try again
+      setError(err?.response?.data?.error?.message || err?.message || "AI detection failed. Please try again.");
     } finally { 
       setLoading(false); 
     }
@@ -151,6 +161,17 @@ export function WasteDetectionPage() {
               Gemma 3 27B High-Performance
             </div>
           </div>
+
+          {error && (
+            <div className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-sm">{error}</span>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => setError(null)} className="h-8 px-2 hover:bg-destructive/20">
+                Dismiss
+              </Button>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Camera Detection */}
