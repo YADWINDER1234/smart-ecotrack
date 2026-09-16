@@ -24,10 +24,15 @@ function getGenAI() {
 }
 
 const MODELS_BY_PRIORITY = [
-  "gemini-2.5-flash",
-  "gemini-2.0-flash",
-  "gemini-1.5-flash"
+  "gemini-2.5-flash"
 ];
+
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 5000; // 5 seconds between retries for rate limit
+
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 // Known hallucinated/garbage names the AI tends to generate when it can't identify
 const HALLUCINATION_KEYWORDS = [
@@ -78,12 +83,13 @@ function isValidIdentification(text: string): boolean {
 
 export async function identifyProduct(input: string, isImage: boolean = false): Promise<string> {
   for (const modelName of MODELS_BY_PRIORITY) {
-    try {
-      console.log(`📡 [AI-ID] Identifying product using ${modelName}...`);
-      const model = getGenAI().getGenerativeModel({ model: modelName }, { timeout: 30000 });
-      
-      const prompt = isImage 
-        ? `You are a product identification expert. Carefully examine this image and identify the EXACT brand and model of the device/product shown.
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        console.log(`📡 [AI-ID] Identifying product using ${modelName} (attempt ${attempt}/${MAX_RETRIES})...`);
+        const model = getGenAI().getGenerativeModel({ model: modelName }, { timeout: 30000 });
+        
+        const prompt = isImage 
+          ? `You are a product identification expert. Carefully examine this image and identify the EXACT brand and model of the device/product shown.
 
 INSTRUCTIONS:
 - Look for visible brand logos, text, or markings on the device
@@ -98,29 +104,36 @@ Examples of correct responses: "iQOO Neo 9 Pro", "Samsung Galaxy S24 Ultra", "iP
 If you truly cannot identify the device at all, respond with exactly: "Unknown Device"
 
 DO NOT make up fictional product names. Only return real, existing product names.`
-        : `Identify the exact official product name for: "${input}".
+          : `Identify the exact official product name for: "${input}".
 Return ONLY the official Brand and Model Name (e.g., "Samsung Galaxy S24 Ultra", "iPhone 15 Pro", "Dell XPS 15 9530").
 If you cannot identify it, respond with exactly: "Unknown Device"
 DO NOT invent fictional product names.`;
 
-      const result = await (isImage 
-        ? model.generateContent([prompt, { inlineData: { data: input, mimeType: "image/jpeg" } }])
-        : model.generateContent(prompt));
-      
-      const text = result.response.text().trim();
-      
-      // Validate the response is a real identification
-      if (text && isValidIdentification(text)) {
-        console.log(`✅ [AI-ID] Identified: "${text}" via ${modelName}`);
-        return text;
-      } else {
-        console.warn(`⚠️ [AI-ID] Invalid/hallucinated response from ${modelName}: "${text}"`);
-        // Don't immediately fail — try the next model
-        continue;
+        const result = await (isImage 
+          ? model.generateContent([prompt, { inlineData: { data: input, mimeType: "image/jpeg" } }])
+          : model.generateContent(prompt));
+        
+        const text = result.response.text().trim();
+        
+        // Validate the response is a real identification
+        if (text && isValidIdentification(text)) {
+          console.log(`✅ [AI-ID] Identified: "${text}" via ${modelName}`);
+          return text;
+        } else {
+          console.warn(`⚠️ [AI-ID] Invalid/hallucinated response from ${modelName}: "${text}"`);
+          break; // Try next model
+        }
+      } catch (error: any) {
+        const isRateLimit = error.message?.includes("429") || error.message?.includes("quota") || error.message?.includes("Too Many Requests");
+        logError(`⚠️ [AI-ID] Error with ${modelName} (attempt ${attempt}): ${error.message?.substring(0, 120)}`);
+        
+        if (isRateLimit && attempt < MAX_RETRIES) {
+          console.log(`⏳ [AI-ID] Rate limited. Waiting ${RETRY_DELAY_MS / 1000}s before retry...`);
+          await delay(RETRY_DELAY_MS);
+          continue;
+        }
+        break; // Non-rate-limit error or max retries reached
       }
-    } catch (error: any) {
-      logError(`⚠️ [AI-ID] Error with ${modelName}: ${error.message}`);
-      continue;
     }
   }
   
@@ -175,37 +188,46 @@ export async function getProductIntelligence(productName: string): Promise<any> 
   `;
 
   for (const modelName of MODELS_BY_PRIORITY) {
-    try {
-      console.log(`🌐 [AI-INTEL] Fetching intelligence for "${productName}" using ${modelName}...`);
-      const model = getGenAI().getGenerativeModel({ model: modelName }, { timeout: 30000 });
-      const result = await model.generateContent(prompt);
-      const rawText = result.response.text();
-      
-      // Handle markdown code blocks and raw JSON
-      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        let cleanedJson = jsonMatch[0];
-        // Remove markdown artifacts if present within the match
-        cleanedJson = cleanedJson.replace(/```json|```/g, "").trim();
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        console.log(`🌐 [AI-INTEL] Fetching intelligence for "${productName}" using ${modelName} (attempt ${attempt}/${MAX_RETRIES})...`);
+        const model = getGenAI().getGenerativeModel({ model: modelName }, { timeout: 30000 });
+        const result = await model.generateContent(prompt);
+        const rawText = result.response.text();
         
-        try {
-          const parsed = JSON.parse(cleanedJson);
+        // Handle markdown code blocks and raw JSON
+        const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          let cleanedJson = jsonMatch[0];
+          // Remove markdown artifacts if present within the match
+          cleanedJson = cleanedJson.replace(/```json|```/g, "").trim();
           
-          // Ensure the identity name matches what we asked for
-          if (parsed.identity) {
-            parsed.identity.name = productName;
+          try {
+            const parsed = JSON.parse(cleanedJson);
+            
+            // Ensure the identity name matches what we asked for
+            if (parsed.identity) {
+              parsed.identity.name = productName;
+            }
+            
+            console.log(`✨ [AI-INTEL] Intelligence retrieved for "${productName}" via ${modelName}!`);
+            return parsed;
+          } catch (parseErr) {
+            logError(`❌ [AI-INTEL] JSON parse error (${modelName}): Malformed JSON output.`);
+            break; // Try next model
           }
-          
-          console.log(`✨ [AI-INTEL] Intelligence retrieved for "${productName}" via ${modelName}!`);
-          return parsed;
-        } catch (parseErr) {
-          logError(`❌ [AI-INTEL] JSON parse error (${modelName}): Malformed JSON output.`);
+        }
+      } catch (error: any) {
+        const isRateLimit = error.message?.includes("429") || error.message?.includes("quota") || error.message?.includes("Too Many Requests");
+        logError(`❌ [AI-INTEL] Error with ${modelName} (attempt ${attempt}): ${error.message?.substring(0, 120)}`);
+        
+        if (isRateLimit && attempt < MAX_RETRIES) {
+          console.log(`⏳ [AI-INTEL] Rate limited. Waiting ${RETRY_DELAY_MS / 1000}s before retry...`);
+          await delay(RETRY_DELAY_MS);
           continue;
         }
+        break; // Non-rate-limit error or max retries reached — try next model
       }
-    } catch (error: any) {
-      logError(`❌ [AI-INTEL] Error with ${modelName}: ${error.message}`);
-      continue;
     }
   }
 

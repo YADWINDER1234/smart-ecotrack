@@ -108,6 +108,9 @@ export async function getFullProductIntelligence(
   const productTitle = await identifyProduct(input, isImage);
   console.log(`🔍 [PIPELINE] Product identified as: "${productTitle}"`);
   
+  // Brief pause to avoid back-to-back rate limiting on free tier
+  await new Promise(r => setTimeout(r, 2000));
+  
   // 2. Get deep intelligence
   let intelligence: any;
   try {
