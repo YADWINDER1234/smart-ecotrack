@@ -44,7 +44,7 @@ const batchUpdateSchema = z.object({
 export const overrideComplaintStatusHandler: RequestHandler = async (req, res, next) => {
   try {
     const { complaintId, status, reason } = overrideComplaintSchema.parse(req.body);
-    const adminId = (req.user as any)?.userId;
+    const adminId = req.user!.id;
     
     const result = await overrideComplaintStatus(adminId, complaintId, status, reason);
     res.json({ success: true, data: result });
@@ -59,7 +59,7 @@ export const overrideComplaintStatusHandler: RequestHandler = async (req, res, n
 export const overrideQRStateHandler: RequestHandler = async (req, res, next) => {
   try {
     const { qrId, newState, reason } = overrideQRSchema.parse(req.body);
-    const adminId = (req.user as any)?.userId;
+    const adminId = req.user!.id;
     
     const result = await overrideQRState(adminId, qrId, newState, reason);
     res.json({ success: true, data: result });
@@ -74,7 +74,7 @@ export const overrideQRStateHandler: RequestHandler = async (req, res, next) => 
 export const forceAssignComplaintHandler: RequestHandler = async (req, res, next) => {
   try {
     const { complaintId, assignedTo, reason } = assignComplaintSchema.parse(req.body);
-    const adminId = (req.user as any)?.userId;
+    const adminId = req.user!.id;
     
     const result = await overrideComplaintAssign(adminId, complaintId, assignedTo, reason);
     res.json({ success: true, data: result });
@@ -89,7 +89,7 @@ export const forceAssignComplaintHandler: RequestHandler = async (req, res, next
 export const batchUpdateComplaintsHandler: RequestHandler = async (req, res, next) => {
   try {
     const { complaintIds, updates, reason } = batchUpdateSchema.parse(req.body);
-    const adminId = (req.user as any)?.userId;
+    const adminId = req.user!.id;
     
     const result = await batchUpdateComplaints(adminId, complaintIds, updates, reason);
     res.json({ success: true, data: result });
@@ -116,7 +116,7 @@ export const getAdminActionHistoryHandler: RequestHandler = async (req, res, nex
 export const undoActionHandler: RequestHandler = async (req, res, next) => {
   try {
     const { actionId } = z.object({ actionId: z.string().uuid() }).parse(req.body);
-    const adminId = (req.user as any)?.userId;
+    const adminId = req.user!.id;
     
     const result = await undoLastAction(adminId, actionId);
     res.json({ success: true, data: result });

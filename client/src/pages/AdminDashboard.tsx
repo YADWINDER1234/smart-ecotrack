@@ -9,31 +9,26 @@ import { MapComponent } from "../components/MapComponent";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Zap, LayoutDashboard, ClipboardList, Package, Fingerprint, AlertTriangle, ShieldAlert, CheckCircle2 } from "lucide-react";
-import { getAccessToken } from "../api/httpClient";
+import { getAccessToken, httpClient } from "../api/httpClient";
 
 export function AdminDashboard() {
   const [metrics, setMetrics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  const rawBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
-  const apiUrl = rawBase.endsWith("/api") ? rawBase : `${rawBase.replace(/\/$/, "")}/api`;
-
   useEffect(() => {
     async function loadMetrics() {
       try {
         const [pendingRes, analyticsRes] = await Promise.all([
-          fetch(`${apiUrl}/admin/pending-metrics`, { credentials: "include" }),
-          fetch(`${apiUrl}/dashboard/admin`, { credentials: "include" })
+          httpClient.get(`/admin/pending-metrics`),
+          httpClient.get(`/dashboard/admin`)
         ]);
         let pendingMetrics = {} as any;
-        if (pendingRes.ok) {
-          const d = await pendingRes.json();
-          pendingMetrics = d.metrics;
+        if (pendingRes.data) {
+          pendingMetrics = pendingRes.data.metrics;
         }
         let funnel: any[] = [];
-        if (analyticsRes.ok) {
-          const d = await analyticsRes.json();
-          funnel = d.funnel || [];
+        if (analyticsRes.data) {
+          funnel = analyticsRes.data.funnel || [];
         }
         let finalMetrics = { ...pendingMetrics, funnel };
         
@@ -76,12 +71,8 @@ export function AdminDashboard() {
 
   const triggerEscalation = async () => {
     try {
-      const res = await fetch(`${apiUrl}/admin/escalate-now`, {
-        method: "POST",
-        credentials: "include",
-        headers: { Authorization: `Bearer ${getAccessToken()}` }
-      });
-      if (res.ok) {
+      const res = await httpClient.post(`/admin/escalate-now`);
+      if (res.data) {
         alert("Auto-escalation triggered!");
         // Reload metrics
         window.location.reload();

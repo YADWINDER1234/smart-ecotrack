@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertCircle, CheckCircle2, Settings2, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { httpClient } from "../api/httpClient";
+
 type OverrideTab = "complaints" | "bulk-ops" | "history";
 
 export function AdminOverridePanel() {
@@ -37,23 +39,16 @@ export function AdminOverridePanel() {
     reason: ""
   });
 
-  const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-
   const handleComplaintOverride = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch(`${apiUrl}/admin/override/complaint-status`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(complaintOverride)
-      });
-      if (!res.ok) throw new Error("Failed to override complaint");
+      const res = await httpClient.post(`/admin/override/complaint-status`, complaintOverride);
+      if (!res.data) throw new Error("Failed to override complaint");
       setMessage({ type: "success", text: "Complaint status overridden!" });
       setComplaintOverride({ complaintId: "", status: "RESOLVED", reason: "" });
     } catch (err: any) {
-      setMessage({ type: "error", text: err.message });
+      setMessage({ type: "error", text: err.response?.data?.message || err.message });
     } finally {
       setLoading(false);
     }
@@ -63,17 +58,12 @@ export function AdminOverridePanel() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch(`${apiUrl}/admin/override/qr-state`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(qrOverride)
-      });
-      if (!res.ok) throw new Error("Failed to override QR state");
+      const res = await httpClient.post(`/admin/override/qr-state`, qrOverride);
+      if (!res.data) throw new Error("Failed to override QR state");
       setMessage({ type: "success", text: "QR state overridden!" });
       setQROverride({ qrId: "", newState: "FINAL_DISPOSITION", reason: "" });
     } catch (err: any) {
-      setMessage({ type: "error", text: err.message });
+      setMessage({ type: "error", text: err.response?.data?.message || err.message });
     } finally {
       setLoading(false);
     }
@@ -88,21 +78,16 @@ export function AdminOverridePanel() {
       if (batchUpdate.status && batchUpdate.status !== "no-change") updates.status = batchUpdate.status;
       if (batchUpdate.priority && batchUpdate.priority !== "no-change") updates.priority = batchUpdate.priority;
 
-      const res = await fetch(`${apiUrl}/admin/batch/update-complaints`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          complaintIds: ids,
-          updates,
-          reason: batchUpdate.reason
-        })
+      const res = await httpClient.post(`/admin/batch/update-complaints`, {
+        complaintIds: ids,
+        updates,
+        reason: batchUpdate.reason
       });
-      if (!res.ok) throw new Error("Failed to batch update");
+      if (!res.data) throw new Error("Failed to batch update");
       setMessage({ type: "success", text: `Updated ${ids.length} complaints!` });
       setBatchUpdate({ complaintIds: "", status: "no-change", priority: "no-change", reason: "" });
     } catch (err: any) {
-      setMessage({ type: "error", text: err.message });
+      setMessage({ type: "error", text: err.response?.data?.message || err.message });
     } finally {
       setLoading(false);
     }

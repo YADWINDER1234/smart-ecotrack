@@ -58,22 +58,24 @@ export async function autoEscalatePendingComplaints() {
     // Get a list of recyclers to distribute assignments
     const recyclers = await db("users").where({ role: "RECYCLER" });
     
-    for (const complaint of veryOld) {
-      const recycler = recyclers[Math.floor(Math.random() * recyclers.length)];
-      await db("complaints")
-        .where({ id: complaint.id })
-        .update({
-          status: "IN_REVIEW",
-          assigned_to: recycler.id,
-          updated_at: now
-        });
+    if (recyclers.length > 0) {
+      for (const complaint of veryOld) {
+        const recycler = recyclers[Math.floor(Math.random() * recyclers.length)];
+        await db("complaints")
+          .where({ id: complaint.id })
+          .update({
+            status: "IN_REVIEW",
+            assigned_to: recycler.id,
+            updated_at: now
+          });
+      }
+      
+      escalationLog.push({
+        count: veryOld.length,
+        rule: "OPEN→IN_REVIEW after 7 days (auto-assigned)",
+        ids: veryOld.map((c: any) => c.id)
+      });
     }
-    
-    escalationLog.push({
-      count: veryOld.length,
-      rule: "OPEN→IN_REVIEW after 7 days (auto-assigned)",
-      ids: veryOld.map((c: any) => c.id)
-    });
   }
 
   return { escalated: escalationLog, timestamp: now };

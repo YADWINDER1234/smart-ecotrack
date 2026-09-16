@@ -50,12 +50,12 @@ export function Navbar() {
 
   useEffect(() => {
     if (!user || !accessToken) return;
-    const streamUrl = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/notifications/stream?token=${accessToken}`;
+    const streamUrl = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api"}/notifications/stream?token=${accessToken}`;
     const es = new EventSource(streamUrl, { withCredentials: true } as any);
     es.addEventListener("audit", () => {
       try {
         if (user.role === "ADMIN") {
-          setOpenCount((c) => c + 0);
+          setOpenCount((c) => c + 1);
         }
       } catch {
         // ignore

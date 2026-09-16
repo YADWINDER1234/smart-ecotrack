@@ -19,8 +19,7 @@ export function Breadcrumb() {
   const location = useLocation();
   const pathSegments = location.pathname
     .split("/")
-    .filter((p) => p && p !== "api")
-    .slice(1);
+    .filter((p) => p && p !== "api");
 
   if (pathSegments.length === 0) return null;
 

@@ -117,8 +117,8 @@ export async function overrideQRState(
     "OVERRIDE_QR_STATE",
     "qr_code",
     qrId,
-    { state: oldState },
-    { state: newState },
+    { current_state: oldState },
+    { current_state: newState },
     reason
   );
 
@@ -201,9 +201,13 @@ export async function undoLastAction(adminId: string, actionId: string) {
       .where({ id: action.entity_id })
       .update(oldValue);
   } else if (action.entity_type === "qr_code") {
+    const qrUpdates = { ...oldValue };
+    if (qrUpdates.current_state) {
+      qrUpdates.lifecycle_state = qrUpdates.current_state;
+    }
     await db("qr_codes")
       .where({ id: action.entity_id })
-      .update(oldValue);
+      .update(qrUpdates);
   }
 
   // Mark action as undone

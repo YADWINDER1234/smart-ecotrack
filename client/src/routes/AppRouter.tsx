@@ -5,21 +5,20 @@ import { RegisterPage } from "../pages/RegisterPage";
 import { DashboardPage } from "../pages/DashboardPage";
 import { QRScanResultPage } from "../pages/QRScanResultPage";
 import { useAuth } from "../hooks/useAuth";
-import { AdminProductPage } from "../pages/AdminProductPage";
 import { AdminQRGenerationPage } from "../pages/AdminQRGenerationPage";
-import { AdminComplaintPage } from "../pages/AdminComplaintPage";
 import { AdminDashboard } from "../pages/AdminDashboard";
-import { AdminAuditPage } from "../pages/AdminAuditPage";
-import { RecyclerEventsPage } from "../pages/RecyclerEventsPage";
-import { RecyclerComplaintsPage } from "../pages/RecyclerComplaintsPage";
 import { ManufacturerProductPage } from "../pages/ManufacturerProductPage";
 import { ManufacturerQRGenerationPage } from "../pages/ManufacturerQRGenerationPage";
-import { SmartBinDashboard } from "../pages/SmartBinDashboard";
-import { RewardsPage } from "../pages/RewardsPage";
 import { WasteDetectionPage } from "../pages/WasteDetectionPage";
+import { RewardsPage } from "../pages/RewardsPage";
+import { AdminProductPage } from "../pages/AdminProductPage";
+import { AdminComplaintPage } from "../pages/AdminComplaintPage";
+import { AdminAuditPage } from "../pages/AdminAuditPage";
+import { SmartBinDashboard } from "../pages/SmartBinDashboard";
 import { RouteOptimizationPage } from "../pages/RouteOptimizationPage";
 import { BlockchainLedgerPage } from "../pages/BlockchainLedgerPage";
-import { AIChatbotWidget } from "../components/AIChatbotWidget";
+import { RecyclerEventsPage } from "../pages/RecyclerEventsPage";
+import { RecyclerComplaintsPage } from "../pages/RecyclerComplaintsPage";
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -32,12 +31,13 @@ function RequireRole({
   role,
   children
 }: {
-  role: "ADMIN" | "RECYCLER" | "MANUFACTURER" | "CONSUMER";
+  role: string | string[];
   children: React.ReactNode;
 }) {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
-  if (user.role !== role) return <Navigate to="/dashboard" replace />;
+  const roles = Array.isArray(role) ? role : [role];
+  if (!roles.includes(user.role)) return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 }
 
@@ -58,16 +58,6 @@ export function AppRouter() {
         }
       />
       <Route
-        path="/admin/products"
-        element={
-          <RequireAuth>
-            <RequireRole role="ADMIN">
-              <AdminProductPage />
-            </RequireRole>
-          </RequireAuth>
-        }
-      />
-      <Route
         path="/admin"
         element={
           <RequireAuth>
@@ -78,51 +68,11 @@ export function AppRouter() {
         }
       />
       <Route
-        path="/admin/audit"
-        element={
-          <RequireAuth>
-            <RequireRole role="ADMIN">
-              <AdminAuditPage />
-            </RequireRole>
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/admin/complaints"
-        element={
-          <RequireAuth>
-            <RequireRole role="ADMIN">
-              <AdminComplaintPage />
-            </RequireRole>
-          </RequireAuth>
-        }
-      />
-      <Route
         path="/admin/products/:id/qr"
         element={
           <RequireAuth>
             <RequireRole role="ADMIN">
               <AdminQRGenerationPage />
-            </RequireRole>
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/recycler/events"
-        element={
-          <RequireAuth>
-            <RequireRole role="RECYCLER">
-              <RecyclerEventsPage />
-            </RequireRole>
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/recycler/complaints"
-        element={
-          <RequireAuth>
-            <RequireRole role="RECYCLER">
-              <RecyclerComplaintsPage />
             </RequireRole>
           </RequireAuth>
         }
@@ -148,12 +98,11 @@ export function AppRouter() {
         }
       />
 
-      {/* New Feature Routes */}
       <Route
-        path="/bins"
+        path="/waste-detection"
         element={
           <RequireAuth>
-            <SmartBinDashboard />
+            <WasteDetectionPage />
           </RequireAuth>
         }
       />
@@ -166,10 +115,42 @@ export function AppRouter() {
         }
       />
       <Route
-        path="/waste-detection"
+        path="/admin/products"
         element={
           <RequireAuth>
-            <WasteDetectionPage />
+            <RequireRole role={["ADMIN", "MANUFACTURER"]}>
+              <AdminProductPage />
+            </RequireRole>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/admin/complaints"
+        element={
+          <RequireAuth>
+            <RequireRole role="ADMIN">
+              <AdminComplaintPage />
+            </RequireRole>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/admin/audit"
+        element={
+          <RequireAuth>
+            <RequireRole role="ADMIN">
+              <AdminAuditPage />
+            </RequireRole>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/bins"
+        element={
+          <RequireAuth>
+            <RequireRole role={["ADMIN", "RECYCLER"]}>
+              <SmartBinDashboard />
+            </RequireRole>
           </RequireAuth>
         }
       />
@@ -177,7 +158,9 @@ export function AppRouter() {
         path="/route-optimization"
         element={
           <RequireAuth>
-            <RouteOptimizationPage />
+            <RequireRole role={["ADMIN", "RECYCLER"]}>
+              <RouteOptimizationPage />
+            </RequireRole>
           </RequireAuth>
         }
       />
@@ -189,10 +172,29 @@ export function AppRouter() {
           </RequireAuth>
         }
       />
+      <Route
+        path="/recycler/events"
+        element={
+          <RequireAuth>
+            <RequireRole role={["RECYCLER", "ADMIN"]}>
+              <RecyclerEventsPage />
+            </RequireRole>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/recycler/complaints"
+        element={
+          <RequireAuth>
+            <RequireRole role={["RECYCLER", "ADMIN"]}>
+              <RecyclerComplaintsPage />
+            </RequireRole>
+          </RequireAuth>
+        }
+      />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
-    <AIChatbotWidget />
     </>
   );
 }

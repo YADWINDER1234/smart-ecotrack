@@ -35,9 +35,7 @@ export function LoginPage() {
   useEffect(() => {
     if (auth.user) {
       if (!loading) {
-        if (auth.user.role === "ADMIN") nav("/admin/products");
-        else if (auth.user.role === "RECYCLER") nav("/recycler/events");
-        else nav("/dashboard");
+        nav("/dashboard");
       }
     }
   }, [auth.user, loading, nav]);
@@ -47,13 +45,10 @@ export function LoginPage() {
     setError(null);
     setLoading(true);
     try {
-      const loggedInUser = await auth.login({ email, password });
+      await auth.login({ email, password });
       setSuccess(true);
       setTimeout(() => {
-        const role = loggedInUser?.role || "CONSUMER"; 
-        if (role === "ADMIN") nav("/admin/products");
-        else if (role === "RECYCLER") nav("/recycler/events");
-        else nav("/dashboard");
+        nav("/dashboard");
       }, 500);
     } catch (err: any) {
       console.error("Login error:", err);

@@ -73,6 +73,7 @@ export async function transitionWorkflow(input: {
   await db.transaction(async (trx) => {
     await trx("qr_codes").where({ id: qr.id }).update({
       current_state: target,
+      lifecycle_state: target,
       updated_at: trx.fn.now()
     });
 
