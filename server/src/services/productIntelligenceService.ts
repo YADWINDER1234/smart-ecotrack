@@ -106,9 +106,28 @@ export async function getFullProductIntelligence(
 ): Promise<ProductIntelligenceResult> {
   // 1. Identify product with AI
   const productTitle = await identifyProduct(input, isImage);
+  console.log(`🔍 [PIPELINE] Product identified as: "${productTitle}"`);
   
   // 2. Get deep intelligence
-  let intelligence = await getProductIntelligence(productTitle);
+  let intelligence: any;
+  try {
+    intelligence = await getProductIntelligence(productTitle);
+  } catch (err: any) {
+    console.error(`❌ [PIPELINE] Intelligence fetch failed: ${err.message}`);
+    // Return a safe fallback
+    intelligence = {
+      identity: { name: productTitle, brand: "Unknown", category: "Electronics", release_year: "Unknown" },
+      specs: { cpu: "N/A", memory: "N/A", battery: "N/A", display: "N/A", notable_features: ["AI service unavailable"] },
+      management: { maintenance_tips: ["Keep device protected"], common_issues: ["Data unavailable"], optimization_suggestions: ["Try again later"] },
+      sustainability: { eco_score: 50, eco_label: "Pending", hazardous_materials: [], carbon_footprint_est: "Unknown", recycling_instructions: "Take to e-waste center." },
+      market_value: { original_price_est: "Unknown", current_resale_est: "Unknown", trade_in_recommendation: "Try again later." }
+    };
+  }
+  
+  // Ensure the identified name is always used (prevent AI from overriding it)
+  if (intelligence.identity) {
+    intelligence.identity.name = productTitle;
+  }
   
   // 3. Validate market values
   intelligence = validateMarketValues(intelligence);
