@@ -1,3 +1,4 @@
+import { motion, AnimatePresence } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
@@ -69,28 +70,43 @@ export function Navbar() {
 
   return (
     <>
-      {/* Mobile Drawer Overlay */}
-      {drawerOpen && (
-        <div 
-          className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-sm transition-opacity" 
-          onClick={() => setDrawerOpen(false)} 
-        />
-      )}
+      {/* Mobile Drawer */}
+      <AnimatePresence>
+        {drawerOpen && (
+          <>
+            {/* Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-sm"
+              onClick={() => setDrawerOpen(false)}
+            />
 
-      {/* Mobile Drawer Panel */}
-      <div className={`fixed inset-y-0 left-0 z-[101] w-3/4 max-w-sm bg-background border-r shadow-2xl transition-transform duration-300 ease-in-out flex flex-col ${drawerOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="flex h-16 shrink-0 items-center justify-between px-6 border-b">
-          <span className="font-bold text-lg flex items-center gap-2">
-            <Sprout className="h-5 w-5 text-primary" /> Menu
-          </span>
-          <Button variant="ghost" size="icon" onClick={() => setDrawerOpen(false)}>
-            <X className="h-5 w-5" />
-          </Button>
-        </div>
-        <div className="flex-1 overflow-y-auto p-4">
-          <RoleSidebar mobile={true} />
-        </div>
-      </div>
+            {/* Drawer Panel */}
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", bounce: 0, duration: 0.3 }}
+              className="fixed inset-y-0 left-0 z-[101] w-3/4 max-w-sm bg-background border-r shadow-2xl flex flex-col"
+            >
+              <div className="flex h-16 shrink-0 items-center justify-between px-6 border-b">
+                <span className="font-bold text-lg flex items-center gap-2">
+                  <Sprout className="h-5 w-5 text-primary" /> Menu
+                </span>
+                <Button variant="ghost" size="icon" onClick={() => setDrawerOpen(false)}>
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4">
+                <RoleSidebar mobile={true} />
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       <div className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-8">
