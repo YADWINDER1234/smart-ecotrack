@@ -100,7 +100,7 @@ export function Navbar() {
                   <X className="h-5 w-5" />
                 </Button>
               </div>
-              <div className="flex-1 overflow-y-auto p-4">
+              <div className="flex-1 overflow-y-auto flex flex-col p-4">
                 <RoleSidebar mobile={true} />
               </div>
             </motion.div>

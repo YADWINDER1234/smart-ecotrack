@@ -48,7 +48,7 @@ export function RoleSidebar({ className, mobile }: { className?: string; mobile?
   const tip = ECO_TIPS[Math.floor((Date.now() / 86400000) % ECO_TIPS.length)];
 
   return (
-    <aside className={cn(mobile ? "w-full flex flex-col h-full" : "hidden md:flex flex-col w-64 flex-shrink-0 border-r pr-6", className)}>
+    <aside className={cn(mobile ? "w-full flex-1 flex flex-col" : "hidden md:flex flex-col w-64 flex-shrink-0 border-r pr-6", className)}>
       <nav className={cn("flex-1", mobile ? "" : "sticky top-24")}>
         <div className="mb-4 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Navigation
