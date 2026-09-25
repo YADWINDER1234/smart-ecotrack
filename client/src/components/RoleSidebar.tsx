@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Shield, Package, AlertCircle, FileText, CalendarCheck, Trash2, Trophy, Zap, Route, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, Shield, Package, AlertCircle, FileText, CalendarCheck, Zap } from "lucide-react";
 
 import { motion } from "framer-motion";
 
@@ -33,7 +33,7 @@ export function RoleSidebar({ className, mobile }: { className?: string; mobile?
     visible: { 
       opacity: 1, 
       x: 0,
-      transition: { duration: 0.3, ease: "easeOut" }
+      transition: { duration: 0.3 }
     },
   };
 

@@ -31,10 +31,7 @@ export function AIChatbotWidget() {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  const generateAIResponse = (query: string): string => {
-    const q = query.toLowerCase();
-    
-    // Pattern matching for realistic simulated responses
+  const generateAIResponse = (_query: string): string => {
     // Default fallback
     return "I'm still learning about that! As your Eco-Assistant, I can help you understand recycling rules and locate facilities. What would you like to know?";
   };
