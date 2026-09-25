@@ -8,8 +8,6 @@ import { db } from "../db/connection";
 import { listRecyclingEventsForQr } from "../repos/recyclingRepo";
 import { audit } from "./auditService";
 import { publish } from "./notificationService"; // for realtime updates
-import { awardPoints } from "./rewardService";
-import { recordToBlockchain } from "./blockchainService";
 import { classifyWasteType } from "./wasteClassificationService";
 
 // only a subset of states are user-visible transitions; other states exist but
@@ -90,37 +88,6 @@ export async function transitionWorkflow(input: {
       created_at: trx.fn.now()
     });
   });
-
-  // Award reward points (with waste-type multiplier)
-  try {
-    const reward = await awardPoints({
-      userId: input.actorId,
-      eventType: target,
-      wasteType: wasteCategory,
-      sourceEventId: eventId
-    });
-    await db("recycling_events")
-      .where({ id: eventId })
-      .update({ reward_points_awarded: reward.pointsAwarded });
-  } catch (err) {
-    console.error("[REWARD] Failed to award points:", err);
-  }
-
-  // Record to blockchain hash-chain at FINAL_DISPOSITION
-  if (target === "FINAL_DISPOSITION") {
-    try {
-      await recordToBlockchain(eventId, {
-        qrId: qr.id,
-        actorId: input.actorId,
-        productId: qr.product_id,
-        eventType: target,
-        wasteCategory,
-        timestamp: now.toISOString()
-      });
-    } catch (err) {
-      console.error("[BLOCKCHAIN] Failed to record:", err);
-    }
-  }
 
   await audit({
     actorId: input.actorId,

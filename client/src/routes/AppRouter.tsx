@@ -10,13 +10,9 @@ import { AdminDashboard } from "../pages/AdminDashboard";
 import { ManufacturerProductPage } from "../pages/ManufacturerProductPage";
 import { ManufacturerQRGenerationPage } from "../pages/ManufacturerQRGenerationPage";
 import { WasteDetectionPage } from "../pages/WasteDetectionPage";
-import { RewardsPage } from "../pages/RewardsPage";
 import { AdminProductPage } from "../pages/AdminProductPage";
 import { AdminComplaintPage } from "../pages/AdminComplaintPage";
 import { AdminAuditPage } from "../pages/AdminAuditPage";
-import { SmartBinDashboard } from "../pages/SmartBinDashboard";
-import { RouteOptimizationPage } from "../pages/RouteOptimizationPage";
-import { BlockchainLedgerPage } from "../pages/BlockchainLedgerPage";
 import { RecyclerEventsPage } from "../pages/RecyclerEventsPage";
 import { RecyclerComplaintsPage } from "../pages/RecyclerComplaintsPage";
 
@@ -107,14 +103,6 @@ export function AppRouter() {
         }
       />
       <Route
-        path="/rewards"
-        element={
-          <RequireAuth>
-            <RewardsPage />
-          </RequireAuth>
-        }
-      />
-      <Route
         path="/admin/products"
         element={
           <RequireAuth>
@@ -141,34 +129,6 @@ export function AppRouter() {
             <RequireRole role="ADMIN">
               <AdminAuditPage />
             </RequireRole>
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/bins"
-        element={
-          <RequireAuth>
-            <RequireRole role={["ADMIN", "RECYCLER"]}>
-              <SmartBinDashboard />
-            </RequireRole>
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/route-optimization"
-        element={
-          <RequireAuth>
-            <RequireRole role={["ADMIN", "RECYCLER"]}>
-              <RouteOptimizationPage />
-            </RequireRole>
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/blockchain"
-        element={
-          <RequireAuth>
-            <BlockchainLedgerPage />
           </RequireAuth>
         }
       />

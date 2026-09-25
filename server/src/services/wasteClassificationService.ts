@@ -47,8 +47,8 @@ const DISPOSAL_INSTRUCTIONS: Record<WasteType, string> = {
   GLASS: "Handle carefully. Remove lids/caps, rinse, and place in the GLASS recycling bin. Do not mix with ceramics.",
   PAPER: "Keep dry and clean. Remove any plastic coatings or staples. Place in the PAPER recycling bin. Do not include waxed paper.",
   ORGANIC: "Place food scraps, garden waste, and biodegradable items in the ORGANIC compost bin. No plastic bags.",
-  EWASTE: "⚠️ E-WASTE: This item contains electronic components. Do NOT place in regular bins. Take to a designated e-waste collection center. Earns 2x reward points!",
-  HAZARDOUS: "⚠️ HAZARDOUS WASTE: This item contains dangerous materials. Do NOT place in any regular bin. Take to a certified hazardous waste disposal facility. Earns 3x reward points!",
+  EWASTE: "⚠️ E-WASTE: This item contains electronic components. Do NOT place in regular bins. Take to a designated e-waste collection center.",
+  HAZARDOUS: "⚠️ HAZARDOUS WASTE: This item contains dangerous materials. Do NOT place in any regular bin. Take to a certified hazardous waste disposal facility.",
   GENERAL: "Place in the GENERAL waste bin. Consider if the item could be recycled or repurposed before disposal."
 };
 
@@ -118,13 +118,11 @@ export function getDisposalInstructions(wasteType: WasteType): {
   instructions: string;
   targetBin: string;
   isHazardous: boolean;
-  rewardMultiplier: number;
 } {
   return {
     wasteType,
     instructions: DISPOSAL_INSTRUCTIONS[wasteType] || DISPOSAL_INSTRUCTIONS.GENERAL,
     targetBin: BIN_TYPE_MAP[wasteType] || "GENERAL",
-    isHazardous: isHazardous(wasteType),
-    rewardMultiplier: wasteType === "HAZARDOUS" ? 3 : wasteType === "EWASTE" ? 2 : 1
+    isHazardous: isHazardous(wasteType)
   };
 }

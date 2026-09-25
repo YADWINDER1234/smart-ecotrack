@@ -36,12 +36,6 @@ export function RoleSidebar({ className, mobile }: { className?: string; mobile?
               <span>AI Product Hub</span>
             </NavLink>
           </li>
-          <li>
-            <NavLink to="/rewards" onClick={() => window.dispatchEvent(new Event("close-drawer"))} className={getLinkClass}>
-              <Trophy className="h-4 w-4" />
-              <span>Rewards</span>
-            </NavLink>
-          </li>
 
           {viewedRole === "ADMIN" && (
             <>
@@ -69,24 +63,6 @@ export function RoleSidebar({ className, mobile }: { className?: string; mobile?
                   <span>Audit Logs</span>
                 </NavLink>
               </li>
-              <li>
-                <NavLink to="/bins" onClick={() => window.dispatchEvent(new Event("close-drawer"))} className={getLinkClass}>
-                  <Trash2 className="h-4 w-4" />
-                  <span>Smart Bins</span>
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/route-optimization" onClick={() => window.dispatchEvent(new Event("close-drawer"))} className={getLinkClass}>
-                  <Route className="h-4 w-4" />
-                  <span>Route Optimizer</span>
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/blockchain" onClick={() => window.dispatchEvent(new Event("close-drawer"))} className={getLinkClass}>
-                  <ShieldCheck className="h-4 w-4" />
-                  <span>Blockchain</span>
-                </NavLink>
-              </li>
             </>
           )}
 
@@ -102,18 +78,6 @@ export function RoleSidebar({ className, mobile }: { className?: string; mobile?
                 <NavLink to="/recycler/complaints" onClick={() => window.dispatchEvent(new Event("close-drawer"))} className={getLinkClass}>
                   <AlertCircle className="h-4 w-4" />
                   <span>Complaints</span>
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/bins" onClick={() => window.dispatchEvent(new Event("close-drawer"))} className={getLinkClass}>
-                  <Trash2 className="h-4 w-4" />
-                  <span>Smart Bins</span>
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/route-optimization" onClick={() => window.dispatchEvent(new Event("close-drawer"))} className={getLinkClass}>
-                  <Route className="h-4 w-4" />
-                  <span>Route Optimizer</span>
                 </NavLink>
               </li>
             </>

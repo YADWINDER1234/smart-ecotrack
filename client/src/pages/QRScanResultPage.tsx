@@ -225,7 +225,7 @@ export function QRScanResultPage() {
               <BatteryWarning className="h-6 w-6 shrink-0 text-red-500" />
               <div>
                 <strong className="block text-base mb-0.5">⚠️ Hazardous E-Waste Material</strong>
-                <span>Please do not dispose of this in regular bins. Route to a designated E-Waste center to earn a <strong>50 Point Bonus</strong>!</span>
+                <span>Please do not dispose of this in regular bins. Route to a designated E-Waste center!</span>
               </div>
             </div>
           )}

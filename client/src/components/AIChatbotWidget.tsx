@@ -35,27 +35,8 @@ export function AIChatbotWidget() {
     const q = query.toLowerCase();
     
     // Pattern matching for realistic simulated responses
-    if (q.includes("reward") || q.includes("points")) {
-      return "You can earn 10 Reward Points for every verified item you recycle! Once you hit 500 points, you can redeem them for exciting eco-vouchers or discounts at partner brands. 🎁";
-    }
-    if (q.includes("e-waste") || q.includes("ewaste") || q.includes("electronic") || q.includes("battery") || q.includes("batteries")) {
-      return "E-Waste like batteries, old phones, and chargers contain hazardous materials like lithium and lead. NEVER throw them in general trash! Please use the 'Waste Detection' tool to find the nearest certified E-Waste Smart Bin facility.";
-    }
-    if (q.includes("plastic") || q.includes("bottle")) {
-      return "Plastic bottles should be rinsed and crushed to save space before throwing them into the Blue recycling bins. Make sure the cap is on or separated depending on local rules!";
-    }
-    if (q.includes("route") || q.includes("optimizer") || q.includes("collection")) {
-      return "The Route Optimizer automatically calculates the most fuel-efficient pathways for our recycling trucks, prioritizing Smart Bins that are above 80% fill capacity. This saves huge amounts of CO2!";
-    }
-    if (q.includes("blockchain") || q.includes("ledger")) {
-      return "Our Blockchain Ledger ensures 100% transparency. Every time a recycling event reaches 'FINAL_DISPOSITION', we record an immutable hash block so the lifecycle of that item can never be tampered with. 🔗";
-    }
-    if (q.includes("score") || q.includes("eco-score") || q.includes("ecoscore")) {
-      return "Your Eco-Score is an aggregated metric of your overall recycling impact. The more weight you reliably recycle and the fewer complaints lodged against you, the higher your score will be!";
-    }
-    
     // Default fallback
-    return "I'm still learning about that! As your Eco-Assistant, I can help you understand recycling rules, locate Smart Bins, explain your Reward Points, or walk you through the Blockchain ledger. What would you like to know?";
+    return "I'm still learning about that! As your Eco-Assistant, I can help you understand recycling rules and locate facilities. What would you like to know?";
   };
 
   const handleSend = () => {
